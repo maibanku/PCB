@@ -19,3 +19,19 @@ gtest_discover_tests(test_canvas_vertex)
 add_executable(test_canvas_2d test_canvas_2d.cpp)
 target_link_libraries(test_canvas_2d PRIVATE eda_scene gtest_main)
 gtest_discover_tests(test_canvas_2d)
+
+add_executable(test_object test_object.cpp)
+target_link_libraries(test_object PRIVATE eda_core gtest_main)
+gtest_discover_tests(test_object)
+
+add_executable(test_class_db test_class_db.cpp)
+target_link_libraries(test_class_db PRIVATE eda_core gtest_main)
+gtest_discover_tests(test_class_db)
+
+add_executable(test_signal test_signal.cpp)
+target_link_libraries(test_signal PRIVATE eda_core gtest_main)
+gtest_discover_tests(test_signal)
+
+add_executable(test_geometry_types test_geometry_types.cpp)
+target_link_libraries(test_geometry_types PRIVATE eda_geometry gtest_main)
+gtest_discover_tests(test_geometry_types)

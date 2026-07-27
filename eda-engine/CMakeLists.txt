@@ -48,4 +48,5 @@ add_subdirectory(drivers)     # Task 6/7
 add_subdirectory(scene)       # Task 8
 add_subdirectory(main)        # Task 9
 
+add_subdirectory(eda)
 add_subdirectory(tests)
