@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+out/
+.cache/
+
+# CMake
+CMakeUserPresets.json
+
+# Compiled objects
+*.o
+*.obj
+*.pdb
+*.ilk
+
+# Executables
+*.exe
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+
+# FetchContent cache (regenerated)
+_deps/
