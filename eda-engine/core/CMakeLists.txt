@@ -11,5 +11,6 @@ add_library(eda_core STATIC
     object/signal.cpp
     object/resource.cpp
     os/os.cpp
+    io/path.cpp
 )
 target_include_directories(eda_core PUBLIC ${EDA_ROOT})
