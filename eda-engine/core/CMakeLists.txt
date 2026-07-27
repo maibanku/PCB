@@ -9,5 +9,7 @@ add_library(eda_core STATIC
     object/variant.cpp
     object/class_db.cpp
     object/signal.cpp
+    object/resource.cpp
+    os/os.cpp
 )
 target_include_directories(eda_core PUBLIC ${EDA_ROOT})

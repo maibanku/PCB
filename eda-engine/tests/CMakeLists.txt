@@ -35,3 +35,19 @@ gtest_discover_tests(test_signal)
 add_executable(test_geometry_types test_geometry_types.cpp)
 target_link_libraries(test_geometry_types PRIVATE eda_geometry gtest_main)
 gtest_discover_tests(test_geometry_types)
+
+add_executable(test_variant test_variant.cpp)
+target_link_libraries(test_variant PRIVATE eda_core gtest_main)
+gtest_discover_tests(test_variant)
+
+add_executable(test_resource test_resource.cpp)
+target_link_libraries(test_resource PRIVATE eda_core gtest_main)
+gtest_discover_tests(test_resource)
+
+add_executable(test_node_scene_tree test_node_scene_tree.cpp)
+target_link_libraries(test_node_scene_tree PRIVATE eda_scene gtest_main)
+gtest_discover_tests(test_node_scene_tree)
+
+add_executable(test_geometry_arc test_geometry_arc.cpp)
+target_link_libraries(test_geometry_arc PRIVATE eda_geometry gtest_main)
+gtest_discover_tests(test_geometry_arc)
