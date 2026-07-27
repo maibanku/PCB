@@ -10,6 +10,8 @@ target_link_libraries(eda_geometry PUBLIC eda_core)
 add_library(eda_project STATIC
     project/project.cpp
     project/snapshot.cpp
+    project/template_def.cpp
+    project/template_library.cpp
 )
 target_include_directories(eda_project PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_project PUBLIC eda_core)

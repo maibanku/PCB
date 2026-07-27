@@ -19,7 +19,7 @@ related:
 
 # GUI框架实现计划（GUI & Editor Framework）
 
-> 📊 **实现进度**：`[████░░░░░░] 38%` · 3/8 Task · ⚙️ 实现中 · 追踪：[[00-总览/06-前期搭建项目路线]] · 最后更新：2026-07-27
+> 📊 **实现进度**：`[███████░░░] 75%` · 6/8 Task · ⚙️ 实现中 · 追踪：[[00-总览/06-前期搭建项目路线]] · 最后更新：2026-07-27
 
 > **For agentic workers:** REQUIRED SUB-SKILL: 使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 按任务逐个实现。步骤使用 `- [ ]` 复选框跟踪。Task 1 为核心交付（完整 TDD），Task 2..8 为待展开骨架。
 

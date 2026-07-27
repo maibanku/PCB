@@ -49,4 +49,5 @@ add_subdirectory(scene)       # Task 8
 add_subdirectory(main)        # Task 9
 
 add_subdirectory(eda)
+add_subdirectory(editor)
 add_subdirectory(tests)
