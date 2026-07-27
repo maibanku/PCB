@@ -71,3 +71,19 @@ gtest_discover_tests(test_control)
 add_executable(test_project_tree test_project_tree.cpp)
 target_link_libraries(test_project_tree PRIVATE eda_project gtest_main)
 gtest_discover_tests(test_project_tree)
+
+add_executable(test_command test_command.cpp)
+target_link_libraries(test_command PRIVATE eda_command gtest_main)
+gtest_discover_tests(test_command)
+
+add_executable(test_container test_container.cpp)
+target_link_libraries(test_container PRIVATE eda_scene gtest_main)
+gtest_discover_tests(test_container)
+
+add_executable(test_theme test_theme.cpp)
+target_link_libraries(test_theme PRIVATE eda_scene gtest_main)
+gtest_discover_tests(test_theme)
+
+add_executable(test_snapshot test_snapshot.cpp)
+target_link_libraries(test_snapshot PRIVATE eda_project gtest_main)
+gtest_discover_tests(test_snapshot)
