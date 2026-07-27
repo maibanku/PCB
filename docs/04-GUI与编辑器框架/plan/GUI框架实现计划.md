@@ -19,6 +19,8 @@ related:
 
 # GUI框架实现计划（GUI & Editor Framework）
 
+> 📊 **实现进度**：`[░░░░░░░░░░] 0%` · 0/8 Task · 🚧 待实现 · 追踪：[[00-总览/06-前期搭建项目路线]] · 最后更新：2026-07-27
+
 > **For agentic workers:** REQUIRED SUB-SKILL: 使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 按任务逐个实现。步骤使用 `- [ ]` 复选框跟踪。Task 1 为核心交付（完整 TDD），Task 2..8 为待展开骨架。
 
 **Goal:** 用自研的 Control 控件体系 + 布局容器 + 主题 + 可停靠 Dock/属性 Inspector/命令面板/快捷键 + i18n/a11y，搭出一个**能运行、能交互、能换肤、能多语言切换**的专业 EDA 编辑器外壳（不依赖任何系统控件）。
