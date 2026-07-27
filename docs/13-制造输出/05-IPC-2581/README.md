@@ -1,5 +1,6 @@
 ---
 title: 13-05 IPC-2581
+lang: zh-CN
 parent: 13-制造输出
 plan: P13
 status: 待实现

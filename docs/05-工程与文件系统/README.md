@@ -1,5 +1,6 @@
 ---
 title: 工程与文件系统
+lang: zh-CN
 plan: P5
 phase: Phase 1 · 引擎内核
 priority: MVP

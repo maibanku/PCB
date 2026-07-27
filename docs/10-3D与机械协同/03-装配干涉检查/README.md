@@ -1,5 +1,6 @@
 ---
 title: 10-03 装配干涉检查
+lang: zh-CN
 parent: 10-3D与机械协同
 plan: P10
 status: 待实现

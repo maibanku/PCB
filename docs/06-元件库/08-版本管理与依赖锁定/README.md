@@ -1,5 +1,6 @@
 ---
 title: 06-08 版本管理与依赖锁定
+lang: zh-CN
 parent: 06-元件库
 plan: P6
 status: 待实现

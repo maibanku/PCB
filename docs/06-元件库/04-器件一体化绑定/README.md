@@ -1,5 +1,6 @@
 ---
 title: 06-04 器件一体化绑定
+lang: zh-CN
 parent: 06-元件库
 plan: P6
 status: 待实现

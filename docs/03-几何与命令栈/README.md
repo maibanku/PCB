@@ -1,5 +1,6 @@
 ---
 title: 几何与命令栈
+lang: zh-CN
 plan: P3
 phase: Phase 1 · 引擎内核
 priority: MVP

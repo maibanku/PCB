@@ -1,5 +1,6 @@
 ---
 title: 07-09 原理图PDF输出
+lang: zh-CN
 parent: 07-原理图编辑器
 plan: P7
 status: 待实现

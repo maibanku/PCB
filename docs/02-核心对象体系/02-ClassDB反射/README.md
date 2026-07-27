@@ -1,5 +1,6 @@
 ---
 title: 02-02 ClassDB反射
+lang: zh-CN
 parent: 02-核心对象体系
 plan: P2
 status: 待实现

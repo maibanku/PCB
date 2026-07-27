@@ -1,5 +1,6 @@
 ---
 title: 13-01 Gerber输出
+lang: zh-CN
 parent: 13-制造输出
 plan: P13
 status: 待实现
@@ -14,7 +15,7 @@ related: ["[[13-制造输出]]"]
 ## 目标（要实现什么）
 - 输出符合 **RS-274X**（RS-274D 已淘汰）的 Gerber 文件，每层一个 .gbr/.phd 文件
 - 支持图层全集：Top/Bot 铜层、内层、阻焊（Top/Bot）、丝印（Top/Bot）、钢网、 Drill drawing、Board outline
-- 光圈（Aperture / D-code）自动生成与优化：���并相同形状、最小化 D-code 数量、支持自定义光圈（圆/矩形/多边形）
+- 光圈（Aperture / D-code）自动生成与优化：合并相同形状、最小化 D-code 数量、支持自定义光圈（圆/矩形/多边形）
 - 单位（mm / inch）+ 坐标精度（3:3 / 3:4 / 4:4）可配置，零省略前导/后导（LZ/TZ）设置
 - 自定义文件命名规则（如 `proj-GTL.gbr`、`proj-TOP_CU.gbr`），支持占位符模板（项目名/层名/版本）
 - 镜像、旋转、极性（正片/负片）按层设定，支持平面层负片输出
@@ -25,7 +26,7 @@ related: ["[[13-制造输出]]"]
 - RS-274X 是事实标准（Ucamco 维护），扩展 RS-274D 已淘汰，不支持嵌入光圈定义的旧格式
 - Aperture D01-D03 = draw/flash/line，标准光圈定义块（AD）+ 光圈列表（AM）
 - 多边形填充（Region, G36/G37）用于铺铜输出，避免海量 draw 命令
-- 文件命名约定差异大（嘉立创 vs JLCPCB vs Multek），需可配置并预设主要工厂模板
+- 文件命名按工厂档案 `gerber_naming.template` 渲染（嘉立创/JLCPCB/Multek 等参考模板见 [[参考/厂商档案规范]]）
 - 输出后建议自动 round-trip 解析：自己导出 → 自己读回 → 与原设计比对，防止静默丢失
 
 ## 输入 / 输出

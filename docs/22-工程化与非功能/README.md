@@ -1,5 +1,6 @@
 ---
 title: 工程化与非功能
+lang: zh-CN
 plan: P22
 phase: 贯穿
 priority: 贯穿

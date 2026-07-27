@@ -1,5 +1,6 @@
 ---
 title: 11-02 自定义规则语言
+lang: zh-CN
 parent: 11-校验与DFX
 plan: P11
 status: 待实现

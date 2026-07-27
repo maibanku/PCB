@@ -1,5 +1,6 @@
 ---
 title: 19-01 无头导出
+lang: zh-CN
 parent: 19-工具链CLI
 plan: P19
 status: 待实现
@@ -15,7 +16,7 @@ related: ["[[19-工具链CLI]]"]
 - 提供单一可执行 CLI，无头模式打开工程并批量导出：Gerber（RS-274X）+ Excellon + 坐标文件 + 钢网 + IPC-2581/ODB++
 - 命令行触发 ERC（原理图）+ DRC（PCB）+ 一致性检查，产出结构化报告（JSON/HTML/JUnit XML）
 - 支持 BOM 多格式导出（CSV/Excel/含供应链属性），可按输出模板批量产出装配图/制造图/钻孔图 PDF
-- 支�� DXF 与 3D STEP 导出，拼板面板化（V-cut/工艺边/邮票孔）一键产出
+- 支持 DXF 与 3D STEP 导出，拼板面板化（V-cut/工艺边/邮票孔）一键产出
 - 提供退出码语义化（成功/规则失败/格式错误/缺库），CI 可直接据此 gate
 - 提供确定性保证：相同工程+相同规则+相同库版本 → 字节级一致的输出（便于 diff 与回归）
 

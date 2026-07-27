@@ -1,5 +1,6 @@
 ---
 title: 多板系统级
+lang: zh-CN
 plan: P15
 phase: Phase 3 · 专业补强
 priority: 二期

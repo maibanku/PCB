@@ -1,5 +1,6 @@
 ---
 title: 12-05 PI电源平面
+lang: zh-CN
 parent: 12-SI-PI分析
 plan: P12
 status: 待实现

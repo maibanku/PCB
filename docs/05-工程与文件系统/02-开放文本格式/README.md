@@ -1,5 +1,6 @@
 ---
 title: 05-02 开放文本格式
+lang: zh-CN
 parent: 05-工程与文件系统
 plan: P5
 status: 待实现

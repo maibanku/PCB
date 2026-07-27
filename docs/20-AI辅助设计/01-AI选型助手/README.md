@@ -1,5 +1,6 @@
 ---
 title: 20-01 AI选型助手
+lang: zh-CN
 parent: 20-AI辅助设计
 plan: P20
 status: 待实现

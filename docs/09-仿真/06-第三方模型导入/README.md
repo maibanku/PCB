@@ -1,5 +1,6 @@
 ---
 title: 09-06 第三方模型导入
+lang: zh-CN
 parent: 09-仿真
 plan: P9
 status: 待实现

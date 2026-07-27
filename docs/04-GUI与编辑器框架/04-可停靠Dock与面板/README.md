@@ -1,5 +1,6 @@
 ---
 title: 04-04 可停靠Dock与面板
+lang: zh-CN
 parent: 04-GUI与编辑器框架
 plan: P4
 status: 待实现

@@ -1,5 +1,7 @@
 ---
 title: Godot 开源架构参考（目录 + 接口）
+lang: zh-CN
+status: 权威
 created: 2026-07-27
 tags:
   - Godot
@@ -7,8 +9,8 @@ tags:
   - 架构
   - 引擎
 related:
-  - "[[项目目录结构]]"
-  - "[[从零搭建EDA软件-功能设计目录]]"
+  - "[[00-总览/03-项目目录结构]]"
+  - "[[00-总览/01-功能设计目录]]"
 ---
 
 # Godot 开源架构参考（目录 + 接口）
@@ -21,7 +23,7 @@ related:
 
 ## 1. 顶层目录结构（Godot 实际）
 
-| 目录 | 职责 | 我们对应（见 [[项目目录结构]]） |
+| 目录 | 职责 | 我们对应（见 [[00-总览/03-项目目录结构]]） |
 |------|------|-------------------------------|
 | `core/` | 基础类型、对象系统（Object/ClassDB）、Variant、Signal、Resource、容器、数学、String、内存 | `core/` |
 | `servers/` | **后端无关**的低层服务抽象（RenderingServer、PhysicsServer、AudioServer、TextServer、NavigationServer） | `servers/` |
@@ -122,7 +124,7 @@ related:
 
 **CanvasLayer**：独立的 2D 渲染层（多 UI 层/视差）
 
-**Control**（scene/gui/control.h）—— UI 控件基类，**P4 自研 GUI 的��本**
+**Control**（scene/gui/control.h）—— UI 控件基类，**P4 自研 GUI 的范本**
 - 布局：锚点（anchor_left/right/top/bottom）+ 偏移（offset_*）+ grow 方向 + `size_flags`（fill/expand）
 - 尺寸：`set_size` / `set_position` / `get_rect()` / `get_minimum_size()`（虚）
 - 主题：`add_theme_*`（覆盖全局 Theme Resource）
@@ -211,7 +213,7 @@ related:
 - 从 `.h` 看接口，`.cpp` 看实现要点，不逐行读（Godot 单文件常数千行）
 - 关注"方法族分组"（canvas_item_*、texture_*、material_*），理解 RID 资源生命周期（create → set → free）
 - 对照 `core/object/method_bind.h` 理解 ClassDB 如何把方法注册为可反射
-- 注意差异：**我们��� EDA 不是游戏**——万级焊盘图元的稳定性优先级高于游戏动态对象；不需要动画/物理（音频可选）；但**编辑器框架几乎 1:1 可借鉴**
+- 注意差异：**我们的 EDA 不是游戏**——万级焊盘图元的稳定性优先级高于游戏动态对象；不需要动画/物理（音频可选）；但**编辑器框架几乎 1:1 可借鉴**
 
 ---
 

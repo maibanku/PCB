@@ -1,5 +1,6 @@
 ---
 title: 13-09 DXF与3D-STEP
+lang: zh-CN
 parent: 13-制造输出
 plan: P13
 status: 待实现

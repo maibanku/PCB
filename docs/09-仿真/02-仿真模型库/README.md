@@ -1,5 +1,6 @@
 ---
 title: 09-02 仿真模型库
+lang: zh-CN
 parent: 09-仿真
 plan: P9
 status: 待实现

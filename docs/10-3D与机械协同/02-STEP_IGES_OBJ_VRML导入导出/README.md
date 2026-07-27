@@ -1,5 +1,6 @@
 ---
 title: 10-02 STEP/IGES/OBJ/VRML 导入导出
+lang: zh-CN
 parent: 10-3D与机械协同
 plan: P10
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 供应链集成
+lang: zh-CN
 plan: P21
 phase: Phase 5 · 差异化
 priority: 二期差异化

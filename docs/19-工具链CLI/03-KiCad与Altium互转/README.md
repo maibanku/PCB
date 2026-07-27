@@ -1,5 +1,6 @@
 ---
 title: 19-03 KiCad与Altium互转
+lang: zh-CN
 parent: 19-工具链CLI
 plan: P19
 status: 待实现

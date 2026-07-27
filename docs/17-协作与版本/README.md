@@ -1,5 +1,6 @@
 ---
 title: 协作与版本
+lang: zh-CN
 plan: P17
 phase: Phase 4 · 生态与协作
 priority: 二期

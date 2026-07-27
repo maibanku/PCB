@@ -1,5 +1,6 @@
 ---
 title: 13-10 拼板面板化
+lang: zh-CN
 parent: 13-制造输出
 plan: P13
 status: 待实现

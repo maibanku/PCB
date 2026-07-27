@@ -1,5 +1,6 @@
 ---
 title: 10-01 3D 查看器
+lang: zh-CN
 parent: 10-3D与机械协同
 plan: P10
 status: 待实现

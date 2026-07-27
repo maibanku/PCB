@@ -1,5 +1,6 @@
 ---
 title: 核心对象体系
+lang: zh-CN
 plan: P2
 phase: Phase 1 · 引擎内核
 priority: MVP

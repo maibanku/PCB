@@ -1,5 +1,6 @@
 ---
 title: 01-01 平台抽象
+lang: zh-CN
 parent: 01-引擎地基
 plan: P1
 status: 待实现
@@ -14,7 +15,7 @@ related: ["[[01-引擎地基]]"]
 ## 目标（要实现什么）
 - 定义抽象接口 `platform/window.h`：`create(title,w,h,fullscreen,vsync)`、`poll_events()`、`swap_buffers()`、`get_client_size()`、`should_close()`、`set_vsync(mode)`
 - 事件回调转发：键盘（按键 + 修饰键 + 字符输入）、鼠标（按键/移动/滚轮）、窗口尺寸/DPI 变化、关闭/最小化/最大化
-- 首版 `GlfwWindow`（GLFW 3.4）实现并在 Windows 10/11 跑通；接���隔离保证 macOS/Linux 切换零业务代码改动
+- 首版 `GlfwWindow`（GLFW 3.4）实现并在 Windows 10/11 跑通；接口隔离保证 macOS/Linux 切换零业务代码改动
 - HiDPI 支持：查询窗口缩放比（`get_content_scale()`），供上层决定字体/图标像素密度
 - 输入事件以 `core/input::InputEvent` 值类型输出（不与具体窗口库耦合）
 - 多显示器与多窗口的接口预留（首版实现单窗口即可）

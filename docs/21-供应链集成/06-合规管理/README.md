@@ -1,5 +1,6 @@
 ---
 title: 21-06 合规管理
+lang: zh-CN
 parent: 21-供应链集成
 plan: P21
 status: 待实现

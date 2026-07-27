@@ -1,5 +1,6 @@
 ---
 title: 19-02 版本控制钩子
+lang: zh-CN
 parent: 19-工具链CLI
 plan: P19
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 21-04 一站式下单
+lang: zh-CN
 parent: 21-供应链集成
 plan: P21
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 02-06 Node与SceneTree
+lang: zh-CN
 parent: 02-核心对象体系
 plan: P2
 status: 待实现
@@ -13,7 +14,7 @@ related: ["[[02-核心对象体系]]"]
 
 ## 目标（要实现什么）
 - 实现 `scene/main/node.{h,cpp}`：`Node : public Object`，持有 parent/children 列表；`add_child` / `remove_child` / `get_parent` / `get_children`
-- 生命周期通知：`_enter_tree`（挂树时）/ `_ready`（子树全部���绪时，自底向上）/ `_process(delta)`（每帧）/ `_exit_tree`（卸载时）
+- 生命周期通知：`_enter_tree`（挂树时）/ `_ready`（子树全部就绪时，自底向上）/ `_process(delta)`（每帧）/ `_exit_tree`（卸载时）
 - 输入分发：`_input(event)` / `_unhandled_input(event)`；事件自顶向下冒泡，被消费即停
 - 实现 `scene/main/scene_tree.{h,cpp}`：单例持有 `root`；`process(delta)` 遍历树调 `_process`；`input(event)` 遍历调 `_input`
 - 与 P1 主循环对接：[[01-引擎地基/06-主循环]] 把裸 update/draw 改为 `SceneTree::process(delta)` + 渲染驱动

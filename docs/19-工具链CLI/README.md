@@ -1,5 +1,6 @@
 ---
 title: 工具链CLI
+lang: zh-CN
 plan: P19
 phase: Phase 4 · 生态与协作
 priority: 二期

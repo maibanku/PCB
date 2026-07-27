@@ -1,5 +1,6 @@
 ---
 title: 18-03 外部API
+lang: zh-CN
 parent: 18-扩展生态
 plan: P18
 status: 待实现

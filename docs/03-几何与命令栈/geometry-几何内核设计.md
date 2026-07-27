@@ -1,5 +1,7 @@
 ---
 title: eda/geometry 几何内核 · 设计笔记
+lang: zh-CN
+status: 权威
 created: 2026-07-27
 tags:
   - EDA
@@ -7,9 +9,9 @@ tags:
   - 设计笔记
   - P3
 related:
-  - "[[项目目录结构]]"
-  - "[[实现路线图]]"
-  - "[[从零搭建EDA软件-功能设计目录]]"
+  - "[[00-总览/03-项目目录结构]]"
+  - "[[00-总览/02-实现路线图]]"
+  - "[[00-总览/01-功能设计目录]]"
 ---
 
 # eda/geometry 几何内核 · 设计笔记
@@ -196,7 +198,7 @@ CMake target：`eda_geometry`（STATIC），`target_link_libraries(eda_geometry 
 | 算法 | 选型 | 风险/缓解 |
 |------|------|----------|
 | 布尔 | Clipper2（Vatti 扫描线） | 大型铺铜可能慢 → 分块 + 增量重建 |
-| 偏移 | Clipper2 ClipperOffset | ���交处理 → 用 Clipper2 的清理选项 |
+| 偏移 | Clipper2 ClipperOffset | 相交处理 → 用 Clipper2 的清理选项 |
 | 三角剖分 | earcut（耳切） | 不保证 Delaunay（铺铜够用）；若需更优网格再评估 |
 | 空间索引 | 自研 R-tree（STR bulk-load） | 自研正确性风险 → 充分单测 + 与暴力查询交叉验证 |
 | 圆弧离散化 | 等角采样 | 角度容差取 1°~5°（可配）；大圆弧用弦高容差控制 |
@@ -207,7 +209,7 @@ CMake target：`eda_geometry`（STATIC），`target_link_libraries(eda_geometry 
 
 - **units**：mil↔mm↔nm 往返无损（边界值）
 - **boolean**：经典用例——星+圆、同心环差、自交多边形、含孔并集；结果面积守恒
-- **offset**：矩形膨胀、含孔��缩、锐角 miter 限幅
+- **offset**：矩形膨胀、含孔内缩、锐角 miter 限幅
 - **triangulate**：凹多边形、含孔、面积守恒（Σ三角形面积 == 多边形面积）
 - **index(R-tree)**：插入/查询/删除一致性；邻域查询 vs 暴力 O(n²) 结果一致；万级图元查询时延目标
 - **intersect**：线-线（平行/共线/相交）、线-弧、弧-弧

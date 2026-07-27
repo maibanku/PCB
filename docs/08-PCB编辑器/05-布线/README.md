@@ -1,5 +1,6 @@
 ---
 title: 08-05 布线
+lang: zh-CN
 parent: 08-PCB编辑器
 plan: P8b
 status: 待实现
@@ -13,7 +14,7 @@ related: ["[[08-PCB编辑器]]"]
 
 ## 目标（要实现什么）
 - 单路交互式布线（Single-Net Routing）：
-  - 走线（Track/Path）= Path 数据结构（多段直线/圆弧），拐角默认 45°；
+  - 走线（Track），底层用 Path 几何类型存储（多段直线/圆弧），拐角默认 45°；
   - 推挤（Push-and-Shove）：实时推开同层走线/过孔保持合规间距（基于 03-规则）；
   - 绕障（Walkaround）：环绕障碍物走线，不推动；
   - 自由走线（Freehand）：任意角度（用于异形板）；

@@ -1,5 +1,6 @@
 ---
 title: 06-03 3D模型库关联
+lang: zh-CN
 parent: 06-元件库
 plan: P6
 status: 待实现

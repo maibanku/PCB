@@ -1,5 +1,6 @@
 ---
 title: 04-03 主题系统
+lang: zh-CN
 parent: 04-GUI与编辑器框架
 plan: P4
 status: 待实现

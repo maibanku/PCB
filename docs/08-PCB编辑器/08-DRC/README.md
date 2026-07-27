@@ -1,5 +1,6 @@
 ---
 title: 08-08 DRC
+lang: zh-CN
 parent: 08-PCB编辑器
 plan: P8b
 status: 待实现

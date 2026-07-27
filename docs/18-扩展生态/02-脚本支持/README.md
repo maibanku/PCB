@@ -1,5 +1,6 @@
 ---
 title: 18-02 脚本支持
+lang: zh-CN
 parent: 18-扩展生态
 plan: P18
 status: 待实现

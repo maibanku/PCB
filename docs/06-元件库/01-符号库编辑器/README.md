@@ -1,5 +1,6 @@
 ---
 title: 06-01 符号库编辑器
+lang: zh-CN
 parent: 06-元件库
 plan: P6
 status: 待实现

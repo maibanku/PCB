@@ -1,5 +1,6 @@
 ---
 title: 03-04 三角剖分
+lang: zh-CN
 parent: 03-几何与命令栈
 plan: P3
 status: 待实现

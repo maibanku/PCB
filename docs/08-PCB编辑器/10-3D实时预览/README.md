@@ -1,5 +1,6 @@
 ---
 title: 08-10 3D实时预览
+lang: zh-CN
 parent: 08-PCB编辑器
 plan: P8c
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 02-04 Signal信号槽
+lang: zh-CN
 parent: 02-核心对象体系
 plan: P2
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 22-01 性能基准
+lang: zh-CN
 parent: 22-工程化与非功能
 plan: P22
 status: 待实现

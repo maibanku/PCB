@@ -1,5 +1,6 @@
 ---
 title: 01-03 OpenGL驱动
+lang: zh-CN
 parent: 01-引擎地基
 plan: P1
 status: 待实现
@@ -15,7 +16,7 @@ related: ["[[01-引擎地基]]"]
 - 实现 `drivers/opengl/rasterizer_gl.{h,cpp}`，继承 `RenderingServer` 全部接口
 - 用 glad 加载 OpenGL 4.3 Core 函数；窗口上下文由 GLFW 创建（GLFW_OPENGL_CORE_PROFILE）
 - 内嵌 GLSL 着色器（顶点：`proj * pos`；片段：直通 `color`），统一 color 属性，免纹理
-- VAO/VBO 管理��`draw_triangles` 上传顶点 → `glDrawArrays(GL_TRIANGLES)`；静态批可缓存到持久 VBO
+- VAO/VBO 管理：`draw_triangles` 上传顶点 → `glDrawArrays(GL_TRIANGLES)`；静态批可缓存到持久 VBO
 - 状态切换：混合模式映射到 `glBlendFunc`（ALPHA_BLEND = SRC_ALPHA,ONE_MINUS_SRC_ALPHA）、裁剪映射到 `glScissor`
 - 烟雾测试：初始化 → 清屏 → 一帧绘制三角形 → 清理，全程无 GL 报错（KHR_debug 输出）
 

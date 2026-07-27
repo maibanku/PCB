@@ -1,5 +1,6 @@
 ---
 title: 03-07 圆弧离散化
+lang: zh-CN
 parent: 03-几何与命令栈
 plan: P3
 status: 待实现

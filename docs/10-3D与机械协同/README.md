@@ -1,5 +1,6 @@
 ---
 title: 3D与机械协同
+lang: zh-CN
 plan: P10
 phase: Phase 3 · 专业补强
 priority: 二期

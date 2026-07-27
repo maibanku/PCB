@@ -1,5 +1,6 @@
 ---
 title: 16-02 Altium格式
+lang: zh-CN
 parent: 16-格式兼容
 plan: P16
 status: 待实现
@@ -32,7 +33,7 @@ related: ["[[16-格式兼容]]"]
 
 ## 依赖
 - **上游**：[[05-工程与文件系统]]、[[06-元件库]]、[[07-原理图编辑器]]、[[08-PCB编辑器]]
-- **下游**：[[16-08]]、[[16-09]]、[[16-10]]；与 [[16-04]] 共享（DesignSpark 基于 Altium OEM）
+- **下游**：[[16-格式兼容/08-迁移向导]]、[[16-格式兼容/09-保真度报告]]、[[16-格式兼容/10-适配器插件化]]；与 [[16-格式兼容/04-立创EDA与Protel与DesignSpark与gEDA]] 共享（DesignSpark 基于 Altium OEM）
 
 ## 状态
 **待实现**（二期）。进入 Plan P16 时，经 brainstorming → writing-plans 细化为可执行任务。

@@ -1,5 +1,6 @@
 ---
 title: PCB编辑器
+lang: zh-CN
 plan: P8
 phase: Phase 2 · MVP 闭环
 priority: MVP

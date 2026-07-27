@@ -1,5 +1,6 @@
 ---
 title: 原理图编辑器
+lang: zh-CN
 plan: P7
 phase: Phase 2 · MVP 闭环
 priority: MVP

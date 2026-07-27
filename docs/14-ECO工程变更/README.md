@@ -1,5 +1,6 @@
 ---
 title: ECO工程变更
+lang: zh-CN
 plan: P14
 phase: Phase 2 · MVP 闭环
 priority: MVP

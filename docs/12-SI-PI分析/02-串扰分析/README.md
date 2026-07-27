@@ -1,5 +1,6 @@
 ---
 title: 12-02 串扰分析
+lang: zh-CN
 parent: 12-SI-PI分析
 plan: P12
 status: 待实现

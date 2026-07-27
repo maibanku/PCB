@@ -1,5 +1,6 @@
 ---
 title: 09-05 原理图联动
+lang: zh-CN
 parent: 09-仿真
 plan: P9
 status: 待实现

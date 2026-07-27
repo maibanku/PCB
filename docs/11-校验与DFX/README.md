@@ -1,5 +1,6 @@
 ---
 title: 校验与DFX
+lang: zh-CN
 plan: P11
 phase: Phase 2 · MVP 闭环
 priority: MVP

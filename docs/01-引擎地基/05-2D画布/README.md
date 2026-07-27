@@ -1,5 +1,6 @@
 ---
 title: 01-05 2D画布
+lang: zh-CN
 parent: 01-引擎地基
 plan: P1
 status: 待实现

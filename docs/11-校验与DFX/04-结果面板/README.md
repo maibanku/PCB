@@ -1,5 +1,6 @@
 ---
 title: 11-04 结果面板
+lang: zh-CN
 parent: 11-校验与DFX
 plan: P11
 status: 待实现

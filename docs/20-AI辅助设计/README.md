@@ -1,5 +1,6 @@
 ---
 title: AI辅助设计
+lang: zh-CN
 plan: P20
 phase: Phase 5 · 差异化
 priority: 二期差异化

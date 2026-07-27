@@ -1,5 +1,6 @@
 ---
 title: 09-03 分析类型
+lang: zh-CN
 parent: 09-仿真
 plan: P9
 status: 待实现

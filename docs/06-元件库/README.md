@@ -1,5 +1,6 @@
 ---
 title: 元件库
+lang: zh-CN
 plan: P6
 phase: Phase 2 · MVP 闭环
 priority: MVP

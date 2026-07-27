@@ -1,5 +1,6 @@
 ---
 title: 14-04 选择性应用
+lang: zh-CN
 parent: 14-ECO工程变更
 plan: P14
 status: 待实现
@@ -38,4 +39,4 @@ related: ["[[14-ECO工程变更]]"]
 - **下游**：[[06-回滚与审计]]（应用记录）、命令栈（B3）
 
 ## 状态
-**待实现**。进�� Plan P14 时，经 brainstorming → writing-plans 细化为可执行任务。
+**待实现**。进入 Plan P14 时，经 brainstorming → writing-plans 细化为可执行任务。

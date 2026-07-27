@@ -1,5 +1,6 @@
 ---
 title: 03-08 命令栈与选择
+lang: zh-CN
 parent: 03-几何与命令栈
 plan: P3
 status: 待实现

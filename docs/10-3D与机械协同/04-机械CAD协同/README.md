@@ -1,5 +1,6 @@
 ---
 title: 10-04 机械 CAD 协同
+lang: zh-CN
 parent: 10-3D与机械协同
 plan: P10
 status: 待实现

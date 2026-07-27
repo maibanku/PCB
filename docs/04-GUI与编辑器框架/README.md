@@ -1,5 +1,6 @@
 ---
 title: GUI与编辑器框架
+lang: zh-CN
 plan: P4
 phase: Phase 1 · 引擎内核
 priority: MVP
@@ -15,7 +16,7 @@ related: ["[[00-总览/01-功能设计目录]]", "[[00-总览/02-实现路线图
 ## 定位
 - **做什么**：提供自绘 Control 控件体系、布局与容器、全局主题、可停靠 Dock/面板、属性 Inspector、命令面板、快捷键体系、i18n 与无障碍等编辑器基础设施。
 - **不做什么**：不做具体业务视图（原理图/PCB 编辑器由各业务域实现）；不直接绑死某套第三方 UI 框架。
-- **代码位置**��`scene/gui, editor/{dock,inspector,command_palette,tools,undo}`（见 [[00-总览/03-项目目录结构]]）
+- **代码位置**：`scene/gui, editor/{dock,inspector,command_palette,tools,undo}`（见 [[00-总览/03-项目目录结构]]）
 
 ## 子功能清单
 | 编号 | 子功能 | 说明 | 状态 |

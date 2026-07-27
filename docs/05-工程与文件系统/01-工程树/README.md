@@ -1,5 +1,6 @@
 ---
 title: 05-01 工程树
+lang: zh-CN
 parent: 05-工程与文件系统
 plan: P5
 status: 待实现

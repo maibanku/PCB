@@ -1,5 +1,6 @@
 ---
 title: 格式兼容
+lang: zh-CN
 plan: P16
 phase: Phase 4 · 生态与协作
 priority: MVP

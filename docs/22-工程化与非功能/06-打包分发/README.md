@@ -1,5 +1,6 @@
 ---
 title: 22-06 打包分发
+lang: zh-CN
 parent: 22-工程化与非功能
 plan: P22
 status: 待实现

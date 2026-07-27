@@ -1,5 +1,6 @@
 ---
 title: 21-05 订单进度跟踪
+lang: zh-CN
 parent: 21-供应链集成
 plan: P21
 status: 待实现

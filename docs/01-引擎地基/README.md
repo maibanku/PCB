@@ -1,5 +1,6 @@
 ---
 title: 引擎地基
+lang: zh-CN
 plan: P1
 phase: Phase 0 · 引擎地基
 priority: MVP

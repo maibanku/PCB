@@ -1,5 +1,6 @@
 ---
 title: 制造输出
+lang: zh-CN
 plan: P13
 phase: Phase 2 · MVP 闭环
 priority: MVP

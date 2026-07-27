@@ -1,5 +1,6 @@
 ---
 title: 20-08 模型策略
+lang: zh-CN
 parent: 20-AI辅助设计
 plan: P20
 status: 待实现

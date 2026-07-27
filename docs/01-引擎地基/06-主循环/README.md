@@ -1,5 +1,6 @@
 ---
 title: 01-06 主循环
+lang: zh-CN
 parent: 01-引擎地基
 plan: P1
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 05-04 工程模板
+lang: zh-CN
 parent: 05-工程与文件系统
 plan: P5
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 08-02 图层体系与叠层管理器
+lang: zh-CN
 parent: 08-PCB编辑器
 plan: P8a
 status: 待实现

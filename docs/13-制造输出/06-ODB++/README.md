@@ -1,5 +1,6 @@
 ---
 title: 13-06 ODB++
+lang: zh-CN
 parent: 13-制造输出
 plan: P13
 status: 待实现
@@ -19,7 +20,7 @@ related: ["[[13-制造输出]]"]
 - 压缩格式：可选 zip 或 tar.gz，包含完整目录树
 - 校验：导出后用 ODB++ Viewer（参考 Valor NPI 免费查看器）回读检查
 - 与 BOM / 装配变体联动：变体作为 step 子集或独立 step 输出
-- 与 [[05-IPC-2581]] 互补：根据工厂能力选用，国内工厂 ODB++ 接受度高
+- 与 [[05-IPC-2581]] 互补：首选格式按工厂档案 `preferred_delivery_format` 选择（见 [[参考/厂商档案规范]]）
 
 ## 关键点
 - ODB++ 由 Valor（现 Siemens EDA）发起，工业 CAM 系统的事实标准之一，需商业兼容（出口端无需授权）
@@ -27,7 +28,7 @@ related: ["[[13-制造输出]]"]
 - 属性（attributes）是 ODB++ 的精髓：标准化的 .attr 文件，让 CAM 工具能识别网络/器件关系
 - Step 模型支持拼板嵌套：单板 → 拼板 step（step-repeat） → 阵列 step
 - Version 8.x 引入 3D 物料体（3D solid model），可选输出器件 3D 几何
-- 国内大厂（华虹、深南、景旺等）多配备 Valor NPI，ODB++ 是首选交付格式
+- 配备 Valor NPI 的工厂多首选 ODB++；具体以工厂档案 `preferred_delivery_format` 为准（见 [[参考/厂商档案规范]]）
 - 与 IPC-2581 数据等价：可由 IPC-2581 转换或反之，工厂选其一即可
 
 ## 输入 / 输出

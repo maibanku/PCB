@@ -1,5 +1,6 @@
 ---
 title: 12-06 去耦优化
+lang: zh-CN
 parent: 12-SI-PI分析
 plan: P12
 status: 待实现

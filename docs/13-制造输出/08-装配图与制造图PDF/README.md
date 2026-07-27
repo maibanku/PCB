@@ -1,5 +1,6 @@
 ---
 title: 13-08 装配图与制造图PDF
+lang: zh-CN
 parent: 13-制造输出
 plan: P13
 status: 待实现
@@ -26,7 +27,7 @@ related: ["[[13-制造输出]]"]
 - 矢量 PDF（不是位图）便于缩放与归档，工厂可矢量 CAM 提取
 - Drill Table 是制造图的灵魂：列出每种刀具/孔径的孔数、plated/non-plated、用途
 - 极性标识：二极管/电解电容/IC 1 脚必须明确，否则装配易反
-- Title Block 工业标准���ANSI/ASME Y14.35 / Y14.34）：版本管理、修订表（revision block）
+- Title Block 工业标准（ANSI/ASME Y14.35 / Y14.34）：版本管理、修订表（revision block）
 - 阻抗要求必须在制造图注明：层叠表 + 阻抗值 + 公差，工厂据此控制
 - 表面工艺（finish）：HASL（喷锡）、ENIG（化金）、OSP（有机保焊膜）等需注明
 - 与 [[01-Gerber输出]] 数据一致：图纸信息应与 Gerber/Excellon 完全对应

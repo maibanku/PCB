@@ -1,5 +1,6 @@
 ---
 title: 08-11 尺寸标注
+lang: zh-CN
 parent: 08-PCB编辑器
 plan: P8c
 status: 待实现

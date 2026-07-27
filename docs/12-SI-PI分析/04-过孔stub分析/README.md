@@ -1,5 +1,6 @@
 ---
 title: 12-04 过孔stub分析
+lang: zh-CN
 parent: 12-SI-PI分析
 plan: P12
 status: 待实现
@@ -21,7 +22,7 @@ related: ["[[12-SI-PI分析]]"]
 
 ## 关键点
 - stub 谐振是高速背板/服务器主板的头号 SI 杀手：6Gbps 以上信号即使 10mil stub 也可致命
-- 背钻工艺成本：每层 1-2 个背钻孔，需在设计��段权衡
+- 背钻工艺成本：每层 1-2 个背钻孔，需在设计阶段权衡
 - via stub 与 via impedance 是两个问题：stub 是频选陷波（吸收特定频率），via impedance 是宽带反射
 - 盲/埋孔（HDI）可彻底消除 stub，但成本上升一档
 - 工程实践：DDR byte lane 过孔数量多，stub 累积效应需联合 [[03-反射与眼图]] 评估

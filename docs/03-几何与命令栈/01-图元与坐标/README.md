@@ -1,5 +1,6 @@
 ---
 title: 03-01 图元与坐标
+lang: zh-CN
 parent: 03-几何与命令栈
 plan: P3
 status: 待实现

@@ -1,5 +1,6 @@
 ---
 title: 14-02 差异检测
+lang: zh-CN
 parent: 14-ECO工程变更
 plan: P14
 status: 待实现

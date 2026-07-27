@@ -1,5 +1,6 @@
 ---
 title: 11-03 电气网络分析
+lang: zh-CN
 parent: 11-校验与DFX
 plan: P11
 status: 待实现

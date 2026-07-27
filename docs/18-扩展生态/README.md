@@ -1,5 +1,6 @@
 ---
 title: 扩展生态
+lang: zh-CN
 plan: P18
 phase: Phase 4 · 生态与协作
 priority: 二期

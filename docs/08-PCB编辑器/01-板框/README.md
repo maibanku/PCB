@@ -1,5 +1,6 @@
 ---
 title: 08-01 板框
+lang: zh-CN
 parent: 08-PCB编辑器
 plan: P8a
 status: 待实现
