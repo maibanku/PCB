@@ -30,6 +30,7 @@
 #include "editor/shortcuts/shortcut_def.h"
 
 using namespace eda;
+using Preset = InputMap::Preset;
 
 // 便捷：构造一个 KEY PRESS 事件（GLFW key code 由 InputMap::glfw_from_key 推导）。
 static InputEvent key_press(Key k) {

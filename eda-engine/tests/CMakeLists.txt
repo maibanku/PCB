@@ -103,3 +103,15 @@ gtest_discover_tests(test_command_palette)
 add_executable(test_template test_template.cpp)
 target_link_libraries(test_template PRIVATE eda_project gtest_main)
 gtest_discover_tests(test_template)
+
+add_executable(test_shortcuts test_shortcuts.cpp)
+target_link_libraries(test_shortcuts PRIVATE eda_editor gtest_main)
+gtest_discover_tests(test_shortcuts)
+
+add_executable(test_i18n test_i18n.cpp)
+target_link_libraries(test_i18n PRIVATE eda_scene gtest_main)
+gtest_discover_tests(test_i18n)
+
+add_executable(test_archive test_archive.cpp)
+target_link_libraries(test_archive PRIVATE eda_project gtest_main)
+gtest_discover_tests(test_archive)

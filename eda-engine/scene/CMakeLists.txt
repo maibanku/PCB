@@ -5,6 +5,9 @@ add_library(eda_scene STATIC
     gui/control.cpp
     gui/container.cpp
     gui/theme.cpp
+    gui/i18n/translation.cpp
+    gui/i18n/po_loader.cpp
+    gui/i18n/po_extractor.cpp
 )
 target_include_directories(eda_scene PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_scene PUBLIC eda_servers eda_core)

@@ -12,6 +12,8 @@ add_library(eda_project STATIC
     project/snapshot.cpp
     project/template_def.cpp
     project/template_library.cpp
+    project/archive.cpp
+    project/archive_manifest.cpp
 )
 target_include_directories(eda_project PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_project PUBLIC eda_core)
