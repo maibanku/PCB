@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 project(eda_engine LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -38,6 +39,16 @@ FetchContent_MakeAvailable(glfw)
 # glad（本地预生成，GL 3.3 core loader）
 add_library(glad STATIC ${CMAKE_SOURCE_DIR}/third_party/glad/src/gl.c)
 target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/third_party/glad/include)
+
+# Clipper2（布尔/偏移，P3 T3/T4）
+FetchContent_Declare(clipper2
+    GIT_REPOSITORY https://github.com/AngusJohnson/Clipper2.git
+    GIT_TAG Clipper2_1.3.0)
+set(CLIPPER2_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(CLIPPER2_TESTS OFF CACHE BOOL "" FORCE)
+set(CLIPPER2_USINGZ OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(clipper2)
+
 enable_testing()
 
 # 模块（逐 Task 解锁）
