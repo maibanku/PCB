@@ -64,6 +64,16 @@ PowerPortKind parse_power_port_kind(std::string_view s) {
 
 Schematic::Schematic() : uuid_(generate_uuid()) {}
 
+void Schematic::reset() {
+    // 保留 uuid_（稳定主键）；清空其余业务成员。deserialize() 开头调用。
+    name_.clear();
+    components_.clear();
+    wires_.clear();
+    net_labels_.clear();
+    power_ports_.clear();
+    notes_.clear();
+}
+
 Component& Schematic::add_component(Component c) {
     components_.push_back(std::move(c));
     return components_.back();
@@ -689,7 +699,8 @@ bool parse_toml_string_array(std::string_view raw, std::vector<std::string>& out
 }  // namespace
 
 bool Schematic::deserialize(const std::string& text) {
-      // 重置；保留新 UUID（若文本含 uuid 则覆盖）
+      // 重置（保留新 UUID；若文本含 uuid 则覆盖）
+    reset();
 
     enum class Ctx { ROOT, COMPONENT, COMPONENT_ATTR, WIRES, NET_LABELS, POWER_PORTS };
     Ctx ctx = Ctx::ROOT;
@@ -704,7 +715,7 @@ bool Schematic::deserialize(const std::string& text) {
             case Ctx::COMPONENT:
             case Ctx::COMPONENT_ATTR:
                 components_.push_back(std::move(cur_comp));
-                cur_comp 
+                cur_comp = Component();
                 break;
             case Ctx::WIRES:           wires_.push_back(std::move(cur_wire)); cur_wire = Wire(); break;
             case Ctx::NET_LABELS:      net_labels_.push_back(std::move(cur_label)); cur_label = NetLabel(); break;
@@ -733,7 +744,7 @@ bool Schematic::deserialize(const std::string& text) {
 
             if (head == "components") {
                 ctx = Ctx::COMPONENT;
-                cur_comp 
+                cur_comp = Component();
             } else if (head == "wires") {
                 ctx = Ctx::WIRES;
                 cur_wire = Wire();

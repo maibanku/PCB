@@ -37,6 +37,23 @@ Property::Property(std::string name, Variant value, std::string type_name,
 
 Device::Device() : uuid_(generate_uuid()) {}
 
+void Device::reset() {
+    // 保留 uuid_（稳定主键）；清空其余业务成员。deserialize() 开头调用。
+    name_.clear();
+    description_.clear();
+    category_.clear();
+    keywords_.clear();
+    datasheet_url_.clear();
+    symbol_ref_.clear();
+    footprint_ref_.clear();
+    model_3d_ref_.clear();
+    pin_map_.clear();
+    properties_.clear();
+    spice_ = SpiceModel{};
+    supply_ = SupplyChainInfo{};
+    equivalents_.clear();
+}
+
 void Device::map_pin(std::string symbol_pin_number, std::string footprint_pad_number) {
     pin_map_[std::move(symbol_pin_number)] = std::move(footprint_pad_number);
 }
@@ -390,7 +407,8 @@ bool parse_toml_string_array(std::string_view raw, std::vector<std::string>& out
 }  // namespace
 
 bool Device::deserialize(const std::string& text) {
-    
+    // 重置当前 Device 到空白（保留 uuid_；若文本含 uuid 则下方覆盖）
+    reset();
 
     enum class Ctx { ROOT, PROPERTY };
     Ctx ctx = Ctx::ROOT;

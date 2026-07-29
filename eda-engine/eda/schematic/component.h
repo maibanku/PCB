@@ -89,6 +89,13 @@ public:
 
     Component();  // 自动生成 UUID
 
+    // Component 继承不可拷贝/移动的 RefCounted（Object 删除拷贝、atomic 阻止默认移动），
+    // 但 Schematic 需要把 Component 放入 std::vector 并按值传入 add_component。
+    // 这里显式给出"逐成员移动"语义：基类 Resource（含 ref_count_/path_）保持目标对象自身
+    // 状态不被动过（relocate 一个 RefCounted 值不应窃取他人的引用计数），仅移动业务字段。
+    Component(Component&& o) noexcept;
+    Component& operator=(Component&& o) noexcept;
+
     // ----- 身份 / UUID -----
     const std::string& uuid() const { return uuid_; }
     const std::string& refdes() const { return refdes_; }  // R1/C2/U3，可空（未 Annotate）
@@ -148,6 +155,10 @@ public:
     static Ref<Component> parse(const std::string& text);
 
 private:
+    // 重置业务成员到空白状态（保留 uuid_）；用于 deserialize() 开头，
+    // 因 Component 继承不可拷贝/移动的 Resource，无法用 *this = Component() 重置。
+    void reset();
+
     std::string uuid_;
     std::string refdes_;
 

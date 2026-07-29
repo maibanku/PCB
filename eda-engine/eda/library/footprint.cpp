@@ -92,6 +92,18 @@ Pad::Pad(std::string number, geometry::Point position, PadType type, PadShape sh
 
 Footprint::Footprint() : uuid_(generate_uuid()) {}
 
+void Footprint::reset() {
+    // 保留 uuid_（稳定主键）；清空其余业务成员。deserialize() 开头调用。
+    name_.clear();
+    description_.clear();
+    keywords_.clear();
+    pads_.clear();
+    silkscreen_.clear();
+    courtyard_ = geometry::Polygon{};
+    ipc7351_ = Ipc7351Fields{};
+    model_3d_ = Model3DRef{};
+}
+
 Pad& Footprint::add_pad(Pad p) {
     pads_.push_back(std::move(p));
     return pads_.back();
@@ -500,7 +512,8 @@ bool parse_toml_point_list(std::string_view raw, std::vector<geometry::Point>& o
 }  // namespace
 
 bool Footprint::deserialize(const std::string& text) {
-    
+    // 重置当前 Footprint 到空白（保留 uuid_；若文本含 uuid 则下方覆盖）
+    reset();
 
     enum class Ctx { ROOT, PAD, SILKSCREEN };
     Ctx ctx = Ctx::ROOT;

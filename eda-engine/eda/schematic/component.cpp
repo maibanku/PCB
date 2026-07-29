@@ -58,6 +58,48 @@ Rotation parse_rotation(std::string_view s) {
 
 Component::Component() : uuid_(generate_uuid()) {}
 
+// 显式逐成员移动：基类 Resource（含 ref_count_/path_）默认构造，保持目标自身计数与路径
+// 不被动过；仅把业务字段从源搬过来。源对象业务字段进入有效但未指定的 moved-from 状态。
+Component::Component(Component&& o) noexcept
+    : uuid_(std::move(o.uuid_)),
+      refdes_(std::move(o.refdes_)),
+      symbol_(std::move(o.symbol_)),
+      device_(std::move(o.device_)),
+      symbol_ref_(std::move(o.symbol_ref_)),
+      device_ref_(std::move(o.device_ref_)),
+      position_(o.position_),
+      rotation_(o.rotation_),
+      attributes_(std::move(o.attributes_)) {}
+
+Component& Component::operator=(Component&& o) noexcept {
+    if (this != &o) {
+        uuid_ = std::move(o.uuid_);
+        refdes_ = std::move(o.refdes_);
+        symbol_ = std::move(o.symbol_);
+        device_ = std::move(o.device_);
+        symbol_ref_ = std::move(o.symbol_ref_);
+        device_ref_ = std::move(o.device_ref_);
+        position_ = o.position_;
+        rotation_ = o.rotation_;
+        attributes_ = std::move(o.attributes_);
+        // 基类 Resource（ref_count_/path_/metadata_ 等）保持目标对象自身状态，
+        // 不从源搬入——重定位一个 RefCounted 值不得窃取他人的引用计数/资源路径。
+    }
+    return *this;
+}
+
+void Component::reset() {
+    // 保留 uuid_（稳定主键）；清空其余业务成员。deserialize() 开头调用。
+    refdes_.clear();
+    symbol_.reset();
+    device_.reset();
+    symbol_ref_.clear();
+    device_ref_.clear();
+    position_ = geometry::Point{};
+    rotation_ = Rotation::DEG_0;
+    attributes_.clear();
+}
+
 void Component::set_symbol(Ref<Symbol> sym) {
     symbol_ = sym;
     if (sym.valid() && !sym->get_path().empty()) {
@@ -310,7 +352,8 @@ bool parse_toml_point(std::string_view raw, geometry::Point& out) {
 }  // namespace
 
 bool Component::deserialize(const std::string& text) {
-      // 重置（保留新 UUID 自动生成；若文本含 uuid 则覆盖）
+      // 重置（保留 uuid_；若文本含 uuid 则下方覆盖）
+    reset();
 
     enum class Ctx { ROOT, ATTRIBUTES };
     Ctx ctx = Ctx::ROOT;

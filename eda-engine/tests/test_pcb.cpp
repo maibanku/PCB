@@ -1,5 +1,3 @@
-// TEMPORARILY DISABLED: Track(Path{{...}, width, layer, net}) 初始化语法待修
-/*
 // tests/test_pcb.cpp
 //
 // P8 PCB 编辑器 · 对象树骨架测试（REQ-008 六属性契约）。
@@ -365,7 +363,7 @@ TEST(PcbHistoryTest, HistoryPropagatesToChildren) {
 
 TEST(PcbSerializeTest, TrackRoundTripPreservesFields) {
     Track orig(Path{{Point{1 * kMm, 2 * kMm}, Point{3 * kMm, 4 * kMm},
-                    Point{5 * kMm, 6 * kMm}}, 250 * 1000, "F.Cu", "net-abc");
+                    Point{5 * kMm, 6 * kMm}}, 250 * 1000}, "F.Cu", "net-abc");
     orig.set_property("impedance", Variant(int64_t(50)));
     const std::string json = orig.serialize();
 
@@ -449,7 +447,7 @@ TEST(PcbBoardSerializeTest, FullTreeRoundTrip) {
     orig.add_layer(Layer("F.Mask", LayerType::SOLDER_MASK));
 
     Track& t1 = orig.add_track(
-        Path{{Point{1 * kMm, 1 * kMm}, Point{10 * kMm, 1 * kMm}}, 200 * 1000, "F.Cu");
+        Path{{Point{1 * kMm, 1 * kMm}, Point{10 * kMm, 1 * kMm}}, 200 * 1000}, "F.Cu");
     Pad& p1 = orig.add_pad(Point{5 * kMm, 5 * kMm}, 600 * 1000, 600 * 1000,
                            PadShape::RECT, "F.Cu", "1");
     Via& v1 = orig.add_via(Point{3 * kMm, 3 * kMm}, 300 * 1000, 600 * 1000,
@@ -537,17 +535,17 @@ TEST(PcbFindTest, FindBoardSelfAndChildren) {
     Net& n = b.add_net("VCC");
 
     EXPECT_EQ(b.find_by_uuid(b.uuid()), &b);  // Board 自身
-    EXPECT_EQ(b.find_by_uuid(t.uuid()), t.get());
-    EXPECT_EQ(b.find_by_uuid(p.uuid()), p.get());
-    EXPECT_EQ(b.find_by_uuid(v.uuid()), v.get());
-    EXPECT_EQ(b.find_by_uuid(n.uuid()), n.get());
+    EXPECT_EQ(b.find_by_uuid(t.uuid()), &t);
+    EXPECT_EQ(b.find_by_uuid(p.uuid()), &p);
+    EXPECT_EQ(b.find_by_uuid(v.uuid()), &v);
+    EXPECT_EQ(b.find_by_uuid(n.uuid()), &n);
     EXPECT_EQ(b.find_by_uuid("non-existent-uuid"), nullptr);
 
     // 强类型查找
-    EXPECT_EQ(b.find_track(t.uuid()), t.get());
-    EXPECT_EQ(b.find_pad(p.uuid()), p.get());
-    EXPECT_EQ(b.find_via(v.uuid()), v.get());
-    EXPECT_EQ(b.find_net(n.uuid()), n.get());
+    EXPECT_EQ(b.find_track(t.uuid()), &t);
+    EXPECT_EQ(b.find_pad(p.uuid()), &p);
+    EXPECT_EQ(b.find_via(v.uuid()), &v);
+    EXPECT_EQ(b.find_net(n.uuid()), &n);
     EXPECT_EQ(b.find_track(p.uuid()), nullptr);  // 类型不匹配
 }
 
@@ -606,5 +604,3 @@ TEST(PcbClassInfoTest, ClassNamesChainCorrectly) {
     EXPECT_TRUE(b.is_class("PcbEntity"));
     EXPECT_TRUE(b.is_class("Object"));
 }
-
-*/

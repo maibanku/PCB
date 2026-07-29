@@ -113,6 +113,20 @@ Gate::Gate(int index, std::string name) : index_(index), name_(std::move(name)) 
 
 Symbol::Symbol() : uuid_(generate_uuid()) {}
 
+void Symbol::reset() {
+    // 保留 uuid_（稳定主键）；清空其余业务成员。deserialize() 开头调用。
+    name_.clear();
+    designation_.clear();
+    description_.clear();
+    keywords_.clear();
+    datasheet_url_.clear();
+    default_mpn_.clear();
+    pins_.clear();
+    graphics_.clear();
+    pin_map_.clear();
+    gates_.clear();
+}
+
 Pin& Symbol::add_pin(Pin p) {
     // 注：去重由调用方负责（find_pin_by_number + remove_pin_by_number 显式控制），
     // 与 eda::Project::add_page 一致的"append 语义"——简单、可预测。
@@ -502,8 +516,8 @@ bool parse_toml_point_list(std::string_view raw, std::vector<geometry::Point>& o
 }  // namespace
 
 bool Symbol::deserialize(const std::string& text) {
-    // 重置当前 Symbol 到空白（保留 uuid_ 除非文本里有）
-    
+    // 重置当前 Symbol 到空白（保留 uuid_；若文本含 uuid 则下方覆盖）
+    reset();
 
     enum class Ctx { ROOT, PIN, GRAPHICS, GATE, PIN_MAP };
     Ctx ctx = Ctx::ROOT;

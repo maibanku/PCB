@@ -44,8 +44,8 @@ target_include_directories(eda_command PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_command PUBLIC eda_core)
 
 # 业务子域（各自 CMakeLists）
-# add_subdirectory(library)  # TEMP
-# add_subdirectory(schematic)  # TEMP
-# add_subdirectory(pcb)  # TEMP
+add_subdirectory(library)
+add_subdirectory(schematic)
+add_subdirectory(pcb)
 add_subdirectory(validation)
-# add_subdirectory(manufacturing)  # TEMP
+add_subdirectory(manufacturing)

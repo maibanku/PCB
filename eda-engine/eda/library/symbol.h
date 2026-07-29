@@ -237,6 +237,10 @@ public:
     static Ref<Symbol> parse(const std::string& text);
 
 private:
+    // 重置业务成员到空白状态（保留 uuid_）；用于 deserialize() 开头，
+    // 因 Symbol 继承不可拷贝/移动的 Resource，无法用 *this = Symbol() 重置。
+    void reset();
+
     std::string uuid_;
     std::string name_;
     std::string designation_;     // U?/R?/C? 位号前缀

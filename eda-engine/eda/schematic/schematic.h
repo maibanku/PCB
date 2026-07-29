@@ -167,6 +167,10 @@ public:
     static Ref<Schematic> parse(const std::string& text);
 
 private:
+    // 重置业务成员到空白状态（保留 uuid_）；用于 deserialize() 开头，
+    // 因 Schematic 继承不可拷贝/移动的 Resource，无法用 *this = Schematic() 重置。
+    void reset();
+
     std::string uuid_;
     std::string name_;
 

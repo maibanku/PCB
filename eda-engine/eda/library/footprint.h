@@ -275,6 +275,10 @@ public:
     static Ref<Footprint> parse(const std::string& text);
 
 private:
+    // 重置业务成员到空白状态（保留 uuid_）；用于 deserialize() 开头，
+    // 因 Footprint 继承不可拷贝/移动的 Resource，无法用 *this = Footprint() 重置。
+    void reset();
+
     std::string uuid_;
     std::string name_;
     std::string description_;

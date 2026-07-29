@@ -139,3 +139,19 @@ add_executable(test_validation test_validation.cpp)
 target_link_libraries(test_validation PRIVATE eda_validation gtest_main)
 gtest_discover_tests(test_validation)
 
+
+add_executable(test_library test_library.cpp)
+target_link_libraries(test_library PRIVATE eda_library gtest_main)
+gtest_discover_tests(test_library)
+
+add_executable(test_schematic test_schematic.cpp)
+target_link_libraries(test_schematic PRIVATE eda_schematic gtest_main)
+gtest_discover_tests(test_schematic)
+
+add_executable(test_pcb test_pcb.cpp)
+target_link_libraries(test_pcb PRIVATE eda_pcb gtest_main)
+gtest_discover_tests(test_pcb)
+
+add_executable(test_gerber test_gerber.cpp)
+target_link_libraries(test_gerber PRIVATE eda_manufacturing gtest_main)
+gtest_discover_tests(test_gerber)
