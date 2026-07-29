@@ -441,6 +441,7 @@ std::size_t Netlist::pin_count() const {
 //   schema_version = 1
 //   uuid = "..."
 //   name = "Main Sheet"
+//   notes = ["...", "..."]       # 仅当非空；根级字段，必须在任何 [[xxx]] 段之前
 //
 //   [[components]]
 //   uuid = "..."
@@ -467,8 +468,6 @@ std::size_t Netlist::pin_count() const {
 //   net_name = "VCC"
 //   position = [x, y]
 //   kind = "power"
-//
-//   notes = ["...", "..."]       # 仅当非空（TOML 字符串数组）
 
 namespace {
 
@@ -541,6 +540,17 @@ std::string Schematic::serialize() const {
     out += "uuid = "; append_toml_string(out, uuid_); out += '\n';
     out += "name = "; append_toml_string(out, name_); out += '\n';
 
+    // notes：根级字段，必须在任何 [[xxx]] 数组段之前输出。
+    // 解析器进入 [[xxx]] 段后不会回到 ROOT，后置会导致 notes 被当作上一数组段的字段静默丢弃。
+    if (!notes_.empty()) {
+        out += "notes = [";
+        for (std::size_t i = 0; i < notes_.size(); ++i) {
+            if (i > 0) out += ", ";
+            append_toml_string(out, notes_[i]);
+        }
+        out += "]\n";
+    }
+
     for (const Component& c : components_) {
         out += '\n';
         serialize_component_into(out, c);
@@ -572,15 +582,6 @@ std::string Schematic::serialize() const {
         out += "kind = ";
         append_toml_string(out, std::string(to_string_view(pp.kind())));
         out += '\n';
-    }
-
-    if (!notes_.empty()) {
-        out += "notes = [";
-        for (std::size_t i = 0; i < notes_.size(); ++i) {
-            if (i > 0) out += ", ";
-            append_toml_string(out, notes_[i]);
-        }
-        out += "]\n";
     }
 
     return out;

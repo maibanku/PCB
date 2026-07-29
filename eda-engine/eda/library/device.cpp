@@ -117,6 +117,7 @@ bool Device::remove_equivalent(const std::string& ref) {
 //   category = "..."
 //   keywords = "..."
 //   datasheet_url = "..."
+//   equivalents = ["...", "..."]    # 仅当非空；根级字段，必须在任何 [section] 之前
 //
 //   [binding]
 //   symbol_ref = "res://..."
@@ -150,8 +151,6 @@ bool Device::remove_equivalent(const std::string& ref) {
 //   stock = 0
 //   lifecycle = "active"
 //   rohs = true
-//
-//   equivalents = ["...", "..."]    # 仅当非空
 
 namespace {
 
@@ -201,6 +200,16 @@ std::string Device::serialize() const {
     out += "category = "; append_toml_string(out, category_); out += '\n';
     out += "keywords = "; append_toml_string(out, keywords_); out += '\n';
     out += "datasheet_url = "; append_toml_string(out, datasheet_url_); out += '\n';
+
+    // equivalents：根级字段，必须在任何 [section] 之前输出。
+    // 解析器进入 [section] 后不会回到 ROOT，后置会导致根级键被当作上一段表的字段静默丢弃。
+    if (!equivalents_.empty()) {
+        std::vector<std::string> sorted_eq = equivalents_;
+        std::sort(sorted_eq.begin(), sorted_eq.end());
+        out += "equivalents = ";
+        append_toml_string_array(out, sorted_eq);
+        out += '\n';
+    }
 
     // [binding]：始终输出（即使引用为空——schema 完整性，缺失视为未绑定）
     out += "\n[binding]\n";
@@ -271,15 +280,6 @@ std::string Device::serialize() const {
         }
         out += "lifecycle = "; append_toml_string(out, supply_.lifecycle()); out += '\n';
         out += "rohs = "; out += (supply_.rohs() ? "true" : "false"); out += '\n';
-    }
-
-    // equivalents：非空才输出
-    if (!equivalents_.empty()) {
-        std::vector<std::string> sorted_eq = equivalents_;
-        std::sort(sorted_eq.begin(), sorted_eq.end());
-        out += "\nequivalents = ";
-        append_toml_string_array(out, sorted_eq);
-        out += '\n';
     }
 
     return out;

@@ -317,7 +317,10 @@ TEST(PcbPropertiesTest, CustomPropertyRoundTrip) {
     Track t(Path{{Point{0, 0}, Point{kMm, 0}}, 100 * 1000}, "F.Cu");
     t.set_property("impedance", Variant(int64_t(50)));  // 50Ω，用户自定义属性
     EXPECT_EQ(t.get_property("impedance").as_int(), 50);
-    EXPECT_TRUE(t.properties().find("impedance") != t.properties().end());
+    // properties() 按值返回快照（每调用一次都是新的 PropertySet），
+    // 必须先存局部变量再比较迭代器，否则 find/end 来自不同容器（UB）。
+    const PropertySet ps = t.properties();
+    EXPECT_TRUE(ps.find("impedance") != ps.end());
 }
 
 // ============================================================
