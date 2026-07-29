@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.20)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 project(eda_engine LANGUAGES CXX)
 
+# ===== 强制 out-of-source build：禁止在源码根目录直接 cmake =====
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+    message(FATAL_ERROR
+        "In-source build is forbidden.\n"
+        "  cmake -B build              # configure\n"
+        "  cmake --build build         # build\n"
+        "  All artifacts go to build/bin and build/lib.")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -9,6 +18,19 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
+
+# ===== 统一产物输出目录：build/<bin|lib> =====
+# 可执行文件 → build/bin/eda_main.exe
+# 静态库     → build/lib/*.lib
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+# VS 生成器每个配置单独输出(Debug/Release)，强制收敛到同一目录：
+foreach(cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${cfg} "${CMAKE_BINARY_DIR}/bin")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${cfg} "${CMAKE_BINARY_DIR}/lib")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${cfg} "${CMAKE_BINARY_DIR}/lib")
+endforeach()
 
 if(MSVC)
     add_compile_options(/W4 /permissive- /utf-8)

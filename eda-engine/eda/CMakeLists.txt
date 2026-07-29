@@ -49,3 +49,7 @@ add_subdirectory(schematic)
 add_subdirectory(pcb)
 add_subdirectory(validation)
 add_subdirectory(manufacturing)
+
+# P16 格式兼容 · 外部格式导入/导出（KiCad 等）
+add_subdirectory(formats)
+add_subdirectory(eco)

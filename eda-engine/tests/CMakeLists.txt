@@ -84,6 +84,11 @@ add_executable(test_theme test_theme.cpp)
 target_link_libraries(test_theme PRIVATE eda_scene gtest_main)
 gtest_discover_tests(test_theme)
 
+# P4 文本渲染首版：FontProvider（stb_truetype 集成）+ TextRenderer（Canvas2D 占位渲染）
+add_executable(test_font test_font.cpp)
+target_link_libraries(test_font PRIVATE eda_scene gtest_main)
+gtest_discover_tests(test_font)
+
 add_executable(test_snapshot test_snapshot.cpp)
 target_link_libraries(test_snapshot PRIVATE eda_project gtest_main)
 gtest_discover_tests(test_snapshot)
@@ -99,6 +104,12 @@ gtest_discover_tests(test_inspector)
 add_executable(test_command_palette test_command_palette.cpp)
 target_link_libraries(test_command_palette PRIVATE eda_editor gtest_main)
 gtest_discover_tests(test_command_palette)
+
+# P4 菜单系统：MenuBar + Menu + MenuItem（scene/gui/widgets/menu*）。
+# menu.cpp 内查 CommandRegistry（eda_editor 符号），故 link eda_editor（PUBLIC 带 eda_scene）。
+add_executable(test_menu test_menu.cpp)
+target_link_libraries(test_menu PRIVATE eda_editor gtest_main)
+gtest_discover_tests(test_menu)
 
 add_executable(test_template test_template.cpp)
 target_link_libraries(test_template PRIVATE eda_project gtest_main)
@@ -139,6 +150,12 @@ add_executable(test_validation test_validation.cpp)
 target_link_libraries(test_validation PRIVATE eda_validation gtest_main)
 gtest_discover_tests(test_validation)
 
+# P11 DRC（设计规则检查）：ClearanceRule / MinWidthRule / ShortCircuitRule / UnroutedNetRule。
+# eda_validation 已 PUBLIC 链接 eda_pcb + eda_geometry（drc.cpp 下转 Board + 用 R-tree/intersect）。
+add_executable(test_drc test_drc.cpp)
+target_link_libraries(test_drc PRIVATE eda_validation gtest_main)
+gtest_discover_tests(test_drc)
+
 
 add_executable(test_library test_library.cpp)
 target_link_libraries(test_library PRIVATE eda_library gtest_main)
@@ -152,9 +169,18 @@ add_executable(test_pcb test_pcb.cpp)
 target_link_libraries(test_pcb PRIVATE eda_pcb gtest_main)
 gtest_discover_tests(test_pcb)
 
+add_executable(test_eco test_eco.cpp)
+target_link_libraries(test_eco PRIVATE eda_eco gtest_main)
+gtest_discover_tests(test_eco)
+
 add_executable(test_gerber test_gerber.cpp)
 target_link_libraries(test_gerber PRIVATE eda_manufacturing eda_pcb gtest_main)
 gtest_discover_tests(test_gerber)
+
+# P16 格式兼容 · KiCad .kicad_pcb 导入（eda_formats 库）
+add_executable(test_kicad_import test_kicad_import.cpp)
+target_link_libraries(test_kicad_import PRIVATE eda_formats gtest_main)
+gtest_discover_tests(test_kicad_import)
 
 # P3 Task 9：集成验收（跨模块交叉验证）+ 性能基准（独立 main，不入 ctest）
 add_executable(test_geometry_integration test_geometry_integration.cpp)
@@ -163,3 +189,15 @@ gtest_discover_tests(test_geometry_integration)
 
 add_executable(test_geometry_benchmark test_geometry_benchmark.cpp)
 target_link_libraries(test_geometry_benchmark PRIVATE eda_geometry eda_command)
+
+# P4 Task 4：基础 Widget（Label / Button / IconButton / Separator）_draw 输出 +
+# 渲染管线接通（render_subtree → Canvas2D 顶点缓冲）。
+add_executable(test_widget test_widget.cpp)
+target_link_libraries(test_widget PRIVATE eda_scene gtest_main)
+gtest_discover_tests(test_widget)
+
+# P4 widgets：工具栏 / 标题栏 / 状态栏。ToolBar 依赖 CommandRegistry（eda_editor），
+# 故链接 eda_editor（PUBLIC 拉入 eda_scene → Label/Button/HBox 皆可用）。
+add_executable(test_tool_bar test_tool_bar.cpp)
+target_link_libraries(test_tool_bar PRIVATE eda_editor gtest_main)
+gtest_discover_tests(test_tool_bar)

@@ -1,22 +1,28 @@
 # eda/validation/CMakeLists.txt
 #
-# P11 统一校验框架 · 骨架（11-01 统一校验中心 / D1）。
+# P11 统一校验框架（11-01 统一校验中心 / D1 + DRC 集成）。
 #
-# 链接边界：eda_validation PUBLIC eda_core。
-#   - eda_core : Object / Variant / Signal（P2 对象体系 + 信号系统）
-#   - 不链接 eda_pcb / eda_schematic —— ValidationContext 以 const Object* 泛化持有
-#     board/schematic，规则经 Object abstract API 查询（解耦，与 eda/pcb 同样的
-#     "反向依赖隔离"原则）。
-#   - 集成阶段若派生规则需直查 pcb::Board，由该规则在 .cpp 内 include pcb 头并以
-#     is_class + static_cast 下转，新增独立链接关系，不污染本骨架。
+# 链接边界：eda_validation PUBLIC eda_core；DRC 规则额外链接 eda_pcb + eda_geometry。
+#   - eda_core    : Object / Variant / Signal（P2 对象体系 + 信号系统）
+#   - eda_pcb     : Board / Track / Pad / Via / Net（DRC 规则在 drc.cpp 内下转访问）
+#   - eda_geometry: RTree / segment_segment_intersect / measure（DRC 邻域 + 精确距离）
+#
+# 解耦说明：
+#   - 骨架（validation.cpp / erc.cpp）经 Object abstract API 查询，不依赖 pcb/sch 头。
+#   - DRC 规则（drc.cpp）按 validation.h 顶部预留的集成路径，在 .cpp 内 include pcb 头并
+#     is_class + static_cast 下转 Board。eda_pcb 自身 PUBLIC 链接 eda_geometry，故 DRC 规则
+#     同时获得几何内核访问——这是"派生规则新增独立链接关系，不污染骨架"的落地。
 #
 # 集成时由主构建在 eda/CMakeLists.txt 追加：
 #   add_subdirectory(validation)
-# 并在 tests/CMakeLists.txt 追加 test_validation 目标。
+# 并在 tests/CMakeLists.txt 追加 test_validation / test_drc 目标。
 
 add_library(eda_validation STATIC
     validation.cpp
     erc.cpp
+    drc.cpp
 )
 target_include_directories(eda_validation PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_validation PUBLIC eda_core)
+# DRC 规则直查 pcb::Board + geometry 内核（仅 drc.cpp 需要，PUBLIC 暴露给下游测试）。
+target_link_libraries(eda_validation PUBLIC eda_pcb eda_geometry)
