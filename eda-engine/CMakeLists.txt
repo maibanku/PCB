@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 project(eda_engine LANGUAGES CXX)
 
+# 统一 MSVC runtime（Debug=MDd / Release=MD）
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
 # ===== 强制 out-of-source build：禁止在源码根目录直接 cmake =====
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     message(FATAL_ERROR
@@ -81,6 +84,9 @@ add_subdirectory(drivers)     # Task 6/7
 add_subdirectory(scene)       # Task 8
 add_subdirectory(main)        # Task 9
 
-add_subdirectory(eda)
+# editor 先于 eda 处理：eda_project 经 project_commands.cpp 接入 CommandRegistry
+# （eda_editor），需 eda_editor 目标在前。eda_editor 自身仅依赖 eda_scene + eda_core，
+# 不依赖 eda/ 任何子目录，前置无循环。
 add_subdirectory(editor)
+add_subdirectory(eda)
 add_subdirectory(tests)

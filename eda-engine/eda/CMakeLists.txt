@@ -21,8 +21,11 @@ target_link_libraries(eda_geometry PUBLIC eda_core eda_clipper2)
 target_include_directories(eda_geometry PRIVATE ${CMAKE_SOURCE_DIR}/third_party/earcut/include)
 
 # eda_project（含 attachment + archive）
+# project_commands.cpp 接入 CommandRegistry（eda_editor），故 PUBLIC 链接 eda_editor。
+# 依赖顺序：root CMakeLists 已把 editor/ 前置于 eda/，此处可安全引用 eda_editor。
 add_library(eda_project STATIC
     project/project.cpp
+    project/project_commands.cpp
     project/snapshot.cpp
     project/template_def.cpp
     project/template_library.cpp
@@ -32,7 +35,7 @@ add_library(eda_project STATIC
     project/attachment_manager.cpp
 )
 target_include_directories(eda_project PUBLIC ${EDA_ROOT})
-target_link_libraries(eda_project PUBLIC eda_core)
+target_link_libraries(eda_project PUBLIC eda_core eda_editor)
 
 # eda_command
 add_library(eda_command STATIC
@@ -47,6 +50,7 @@ target_link_libraries(eda_command PUBLIC eda_core)
 add_subdirectory(library)
 add_subdirectory(schematic)
 add_subdirectory(pcb)
+add_subdirectory(pcb/editor)
 add_subdirectory(validation)
 add_subdirectory(manufacturing)
 

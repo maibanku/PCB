@@ -20,6 +20,7 @@ add_library(eda_manufacturing STATIC
     gerber_writer.cpp
     excellon_writer.cpp
     pick_place_writer.cpp
+    gerber_export.cpp
 )
 target_include_directories(eda_manufacturing PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_manufacturing PUBLIC eda_core eda_geometry)

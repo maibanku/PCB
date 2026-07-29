@@ -156,6 +156,12 @@ add_executable(test_drc test_drc.cpp)
 target_link_libraries(test_drc PRIVATE eda_validation gtest_main)
 gtest_discover_tests(test_drc)
 
+# P11 实时 DRC 联动（11-02）：DrcLiveController —— dirty 标记 + 自动 DRC + results_changed 信号。
+# 复用 eda_validation（含 DrcLiveController + 4 条 DRC 规则 + ValidationEngine）。
+add_executable(test_drc_live test_drc_live.cpp)
+target_link_libraries(test_drc_live PRIVATE eda_validation gtest_main)
+gtest_discover_tests(test_drc_live)
+
 
 add_executable(test_library test_library.cpp)
 target_link_libraries(test_library PRIVATE eda_library gtest_main)
@@ -169,6 +175,11 @@ add_executable(test_pcb test_pcb.cpp)
 target_link_libraries(test_pcb PRIVATE eda_pcb gtest_main)
 gtest_discover_tests(test_pcb)
 
+# P8 PCB 编辑器交互模块：工具模式 + 鼠标选择/移动/旋转/删除 + 命令化。
+add_executable(test_pcb_editor test_pcb_editor.cpp)
+target_link_libraries(test_pcb_editor PRIVATE eda_pcb_editor gtest_main)
+gtest_discover_tests(test_pcb_editor)
+
 add_executable(test_eco test_eco.cpp)
 target_link_libraries(test_eco PRIVATE eda_eco gtest_main)
 gtest_discover_tests(test_eco)
@@ -176,6 +187,12 @@ gtest_discover_tests(test_eco)
 add_executable(test_gerber test_gerber.cpp)
 target_link_libraries(test_gerber PRIVATE eda_manufacturing eda_pcb gtest_main)
 gtest_discover_tests(test_gerber)
+
+# P13 制造输出 · GerberExporter 端到端（Board → 多层 Gerber + Excellon + Pick&Place → 落盘 + roundtrip）。
+# eda_manufacturing 已 PUBLIC 链接 eda_core（Signal）+ eda_geometry；测试组装 Board 故追加 eda_pcb。
+add_executable(test_gerber_export test_gerber_export.cpp)
+target_link_libraries(test_gerber_export PRIVATE eda_manufacturing eda_pcb gtest_main)
+gtest_discover_tests(test_gerber_export)
 
 # P16 格式兼容 · KiCad .kicad_pcb 导入（eda_formats 库）
 add_executable(test_kicad_import test_kicad_import.cpp)
@@ -201,3 +218,10 @@ gtest_discover_tests(test_widget)
 add_executable(test_tool_bar test_tool_bar.cpp)
 target_link_libraries(test_tool_bar PRIVATE eda_editor gtest_main)
 gtest_discover_tests(test_tool_bar)
+
+# P5 工程命令化：NewProjectCommand / SaveProjectCommand / LoadProjectCommand +
+# register_project_commands（接入 CommandRegistry）。eda_project 经 project_commands.cpp
+# 依赖 eda_editor（CommandRegistry），PUBLIC 链接已生效，故仅链 eda_project 即可。
+add_executable(test_project_commands test_project_commands.cpp)
+target_link_libraries(test_project_commands PRIVATE eda_project gtest_main)
+gtest_discover_tests(test_project_commands)

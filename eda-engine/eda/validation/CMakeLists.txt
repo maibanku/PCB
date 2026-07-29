@@ -1,6 +1,6 @@
 # eda/validation/CMakeLists.txt
 #
-# P11 统一校验框架（11-01 统一校验中心 / D1 + DRC 集成）。
+# P11 统一校验框架（11-01 统一校验中心 / D1 + DRC 集成 + 11-02 实时 DRC 联动）。
 #
 # 链接边界：eda_validation PUBLIC eda_core；DRC 规则额外链接 eda_pcb + eda_geometry。
 #   - eda_core    : Object / Variant / Signal（P2 对象体系 + 信号系统）
@@ -15,12 +15,13 @@
 #
 # 集成时由主构建在 eda/CMakeLists.txt 追加：
 #   add_subdirectory(validation)
-# 并在 tests/CMakeLists.txt 追加 test_validation / test_drc 目标。
+# 并在 tests/CMakeLists.txt 追加 test_validation / test_drc / test_drc_live 目标。
 
 add_library(eda_validation STATIC
     validation.cpp
     erc.cpp
     drc.cpp
+    drc_live.cpp
 )
 target_include_directories(eda_validation PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_validation PUBLIC eda_core)
