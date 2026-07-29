@@ -10,9 +10,11 @@
 #   - eda_core      : Object / Signal / Variant / InputEvent / Vector2（P1/P2）
 #
 # 注意：不依赖 eda_editor（GLFW 键码用本地常量），保持 PCB 编辑器模块独立。
+# RouteTool（布线交互）仅依赖 eda_pcb + eda_command + eda_geometry，由本库一并编译。
 
 add_library(eda_pcb_editor STATIC
     pcb_editor.cpp
+    route_tool.cpp
 )
 target_include_directories(eda_pcb_editor PUBLIC ${EDA_ROOT})
 target_link_libraries(eda_pcb_editor PUBLIC

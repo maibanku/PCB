@@ -171,6 +171,11 @@ add_executable(test_schematic test_schematic.cpp)
 target_link_libraries(test_schematic PRIVATE eda_schematic gtest_main)
 gtest_discover_tests(test_schematic)
 
+# P7 原理图编辑器交互模块：工具模式 + 放置器件 / 画导线 / 网络标号 + 命令化。
+add_executable(test_schematic_editor test_schematic_editor.cpp)
+target_link_libraries(test_schematic_editor PRIVATE eda_schematic_editor gtest_main)
+gtest_discover_tests(test_schematic_editor)
+
 add_executable(test_pcb test_pcb.cpp)
 target_link_libraries(test_pcb PRIVATE eda_pcb gtest_main)
 gtest_discover_tests(test_pcb)
@@ -179,6 +184,12 @@ gtest_discover_tests(test_pcb)
 add_executable(test_pcb_editor test_pcb_editor.cpp)
 target_link_libraries(test_pcb_editor PRIVATE eda_pcb_editor gtest_main)
 gtest_discover_tests(test_pcb_editor)
+
+# P8 PCB 布线交互工具（RouteTool）：节点列表 → Track 序列 + 栅格吸附 + 正交 L 形。
+# eda_pcb_editor 已 PUBLIC 链接 eda_pcb + eda_command + eda_geometry。
+add_executable(test_route_tool test_route_tool.cpp)
+target_link_libraries(test_route_tool PRIVATE eda_pcb_editor gtest_main)
+gtest_discover_tests(test_route_tool)
 
 add_executable(test_eco test_eco.cpp)
 target_link_libraries(test_eco PRIVATE eda_eco gtest_main)

@@ -49,6 +49,7 @@ target_link_libraries(eda_command PUBLIC eda_core)
 # 业务子域（各自 CMakeLists）
 add_subdirectory(library)
 add_subdirectory(schematic)
+add_subdirectory(schematic/editor)
 add_subdirectory(pcb)
 add_subdirectory(pcb/editor)
 add_subdirectory(validation)

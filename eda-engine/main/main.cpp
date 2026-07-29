@@ -18,7 +18,7 @@
 //   3) render_subtree(root, canvas) —— DFS 前序遍历 Control 树：
 //        Control._draw → ProductionControlCanvas::{draw_rect, draw_text}
 //        → Canvas2D::{draw_rect_filled, draw_line} → 顶点缓冲
-//   4) draw_pcb_demo(canvas, center_rect, zoom) —— PCB Demo 直接走 Canvas2D
+//   4) draw_pcb_demo(canvas, center_rect, view_zoom) —— PCB Demo 直接走 Canvas2D
 //   5) draw_palette_overlay(...) —— 命令面板占位弹层
 //   6) canvas.flush() → RenderingServer → RasterizerGL → GPU
 //
@@ -37,6 +37,8 @@
 #include "core/math/color.h"
 #include "core/math/rect2.h"
 #include "core/math/vector2.h"
+#include "core/object/ref.h"
+#include "core/object/signal.h"
 #include "drivers/opengl/rasterizer_gl.h"
 #include "editor/command_palette/command_palette.h"
 #include "editor/command_palette/command_registry.h"
@@ -44,6 +46,17 @@
 #include "editor/dock/dock_panel.h"
 #include "editor/inspector/inspector.h"
 #include "editor/shortcuts/input_map.h"
+#include "eda/command/undo_stack.h"
+#include "eda/manufacturing/gerber_export.h"
+#include "eda/pcb/board.h"
+#include "eda/pcb/editor/pcb_editor.h"
+#include "eda/pcb/pad.h"
+#include "eda/pcb/track.h"
+#include "eda/pcb/via.h"
+#include "eda/project/project.h"
+#include "eda/project/project_commands.h"
+#include "eda/validation/drc.h"
+#include "eda/validation/drc_live.h"
 #include "platform/glfw/glfw_window.h"
 #include "scene/2d/canvas_2d.h"
 #include "scene/gui/canvas_item.h"             // CanvasItem（subtree queue_redraw）
@@ -117,9 +130,10 @@ void lock_rect(Control& c, Vector2 pos, Vector2 size) {
     c.set_size(size);
 }
 
-// 绘制 PCB Demo（P1 保留）：网格 + 焊盘 + 走线 + 过孔，绝对坐标位于 center_rect 内。
-// 坐标以 center_rect.pos 为原点偏移；网格按 20px 步进铺满 CENTER。
-void draw_pcb_demo(Canvas2D& canvas, Rect2 center_rect, float zoom) {
+// 绘制 PCB 画布背景 + 网格 + 边框（保留 P1 Demo 视觉骨架）。
+// 实际图元（Track/Pad/Via）改为 Board 持有，由 draw_board_entities 按
+// PcbEditor.board_to_screen 变换绘制，支持命中/选择/隐藏。
+void draw_pcb_canvas_bg(Canvas2D& canvas, Rect2 center_rect) {
     const Vector2 origin = center_rect.pos;
     const float w = center_rect.size.x;
     const float h = center_rect.size.y;
@@ -146,36 +160,67 @@ void draw_pcb_demo(Canvas2D& canvas, Rect2 center_rect, float zoom) {
         canvas.draw_line({origin.x, fy}, {origin.x + w, fy});
     }
 
-    // CENTER 内的局部坐标（保留 P1 像素布局，缩放后放置在画布左上区域）。
-    auto lx = [&](float x) { return origin.x + x * zoom; };
-    auto ly = [&](float y) { return origin.y + y * zoom; };
-
-    // 焊盘（黄色矩形 ×2）。
-    const Color pad_color = theme_color_or(
-        "warning", Color{1.0f, 0.85f, 0.0f, 1.0f});
-    canvas.set_color(pad_color);
-    const float pad_w = 40.0f * zoom;
-    const float pad_h = 40.0f * zoom;
-    canvas.draw_rect_filled(Rect2{{lx(40.0f), ly(40.0f)}, {pad_w, pad_h}});
-    canvas.draw_rect_filled(Rect2{{lx(240.0f), ly(40.0f)}, {pad_w, pad_h}});
-
-    // 走线（蓝色，加粗）。
-    const Color trace_color = theme_color_or(
-        "accent", Color{0.2f, 0.5f, 1.0f, 1.0f});
-    canvas.set_color(trace_color);
-    canvas.set_line_thickness(4.0f * zoom);
-    canvas.draw_line({lx(80.0f), ly(60.0f)}, {lx(240.0f), ly(60.0f)});
-    canvas.set_line_thickness(1.0f);
-
-    // 过孔（红色圆）。
-    const Color via_color = theme_color_or(
-        "error", Color{1.0f, 0.2f, 0.2f, 1.0f});
-    canvas.set_color(via_color);
-    canvas.draw_circle_filled({lx(160.0f), ly(60.0f)}, 8.0f * zoom);
-
     // CENTER 边框（强调画布边界）。
     draw_rect_outline(canvas, center_rect,
                       theme_color_or("border", grid_color));
+}
+
+// 绘制 Board 上的实际图元（Track/Pad/Via），通过 PcbEditor 的 board_to_screen
+// 变换把板坐标（nm）映射到屏幕像素。跳过 editor 标记为隐藏的 UUID，使命令化
+// 删除视觉上立即生效。调用方在此之前已绘制画布背景 + 网格。
+void draw_board_entities(Canvas2D& canvas,
+                         const pcb::PcbEditor& editor,
+                         const pcb::Board& board) {
+    const float z = editor.get_zoom();  // px / nm
+
+    // 走线（蓝色，加粗）。零宽路径退化为 1px 细线，确保至少可见。
+    const Color trace_color = theme_color_or(
+        "accent", Color{0.2f, 0.5f, 1.0f, 1.0f});
+    canvas.set_color(trace_color);
+    for (const auto& t : board.tracks()) {
+        if (editor.is_hidden(t->uuid())) continue;
+        const auto& path = t->path();
+        if (path.points.size() < 2) continue;
+        float thickness = static_cast<float>(path.width) * z;
+        if (thickness < 1.0f) thickness = 1.0f;
+        canvas.set_line_thickness(thickness);
+        for (std::size_t i = 1; i < path.points.size(); ++i) {
+            canvas.draw_line(editor.board_to_screen(path.points[i - 1]),
+                             editor.board_to_screen(path.points[i]));
+        }
+    }
+    canvas.set_line_thickness(1.0f);
+
+    // 焊盘（黄色矩形）。
+    const Color pad_color = theme_color_or(
+        "warning", Color{1.0f, 0.85f, 0.0f, 1.0f});
+    canvas.set_color(pad_color);
+    for (const auto& p : board.pads()) {
+        if (editor.is_hidden(p->uuid())) continue;
+        const Vector2 center = editor.board_to_screen(p->position());
+        const float pw = static_cast<float>(p->width()) * z;
+        const float ph = static_cast<float>(p->height()) * z;
+        canvas.draw_rect_filled(Rect2{{center.x - pw * 0.5f, center.y - ph * 0.5f},
+                                      {pw, ph}});
+    }
+
+    // 过孔（红色环：外圆填充 + 内圆背景色挖空，简化为外圆 + 内点）。
+    const Color via_color = theme_color_or(
+        "error", Color{1.0f, 0.2f, 0.2f, 1.0f});
+    const Color via_hole = theme_color_or(
+        "background", Color{0.10f, 0.10f, 0.12f, 1.0f});
+    for (const auto& v : board.vias()) {
+        if (editor.is_hidden(v->uuid())) continue;
+        const Vector2 center = editor.board_to_screen(v->position());
+        const float pad_r = static_cast<float>(v->pad_diameter()) * z * 0.5f;
+        const float drill_r = static_cast<float>(v->drill_diameter()) * z * 0.5f;
+        canvas.set_color(via_color);
+        canvas.draw_circle_filled(center, pad_r);
+        if (drill_r > 0.5f) {
+            canvas.set_color(via_hole);
+            canvas.draw_circle_filled(center, drill_r);
+        }
+    }
 }
 
 // 绘制命令面板占位弹层（顶部居中圆角矩形——简化为直角）。
@@ -221,33 +266,68 @@ int main(int argc, char** argv) {
 
     Canvas2D canvas(&gl);
     InputState input;
-    float zoom = 1.0f;
     bool  exit_requested = false;
 
-    auto clamp_zoom = [&] {
-        if (zoom < 0.1f) zoom = 0.1f;
-        if (zoom > 10.0f) zoom = 10.0f;
-    };
-
     // 2) 命令注册表 + 命令面板。
-    //    register_builtins 注册 11 个占位命令（handler 空）；此处覆盖 zoom 三连的
-    //    handler，使 ToolBar 按钮 / Menu 项 / InputMap 快捷键三路均路由到同一回调。
+    //    register_builtins 注册 11 个占位命令（handler 空）；真实 handler 由后续
+    //    各模块（view_zoom / 工程 / 编辑器 / 导出）以同 id 调 register_command 覆盖。
     CommandRegistry& registry = CommandRegistry::get();
     registry.register_builtins();
-    registry.register_command(
-        {builtin::VIEW_ZOOM_IN, "Zoom In", "Increase zoom level",
-         "View", "Ctrl++", [&] { zoom *= 1.1f; clamp_zoom(); }});
-    registry.register_command(
-        {builtin::VIEW_ZOOM_OUT, "Zoom Out", "Decrease zoom level",
-         "View", "Ctrl+-", [&] { zoom *= 0.9f; clamp_zoom(); }});
-    registry.register_command(
-        {builtin::VIEW_ZOOM_FIT, "Zoom to Fit", "Reset zoom to 100%",
-         "View", "", [&] { zoom = 1.0f; }});
 
     CommandPalette palette;
 
     // 3) InputMap（默认 KiCad 预设）。
     InputMap input_map(InputMap::Preset::KICAD);
+
+    // 3.5) PCB 编辑域：Board（P8 对象树）+ UndoStack（P3 命令栈）+ PcbEditor（P8 交互）。
+    //
+    // Board 持有真实 Track/Pad/Via 图元（取代原 main 内硬编码的 PCB Demo 像素图元）：
+    // DRC 与 Gerber 导出直接消费 Board，PcbEditor 命令化编辑（移动/旋转/删除/添加）
+    // 经 UndoStack 入栈，board_modified 信号级联触发 DrcLiveController 重算。
+    //
+    // 视图变换（PcbEditor.screen_to_board / board_to_screen）：
+    //   board_nm = (screen_px - offset) / view_zoom
+    //   view_zoom 单位：像素 / nm。取 base 0.0001 px/nm（1 px = 10 μm，1 mm = 100 px），
+    //   叠乘 view_zoom（状态栏百分比）。offset = center_rect.pos（板原点贴在画布左上）。
+    pcb::Board         board("MainBoard");
+    command::UndoStack undo_stack;
+    pcb::PcbEditor     editor;
+    editor.set_board(&board);
+    editor.set_undo_stack(&undo_stack);
+    editor.set_tool(pcb::Tool::SELECT);
+
+    // 板上初始图元（demo）：2 焊盘 + 1 走线 + 1 过孔，板坐标 nm。
+    //   500_000 nm = 0.5 mm = 50 px（view_zoom=1 时）。
+    {
+        using namespace eda::geometry;
+        board.add_pad({500'000, 500'000}, 500'000, 500'000,
+                      pcb::PadShape::RECT, "F.Cu", "1");
+        board.add_pad({2'500'000, 500'000}, 500'000, 500'000,
+                      pcb::PadShape::RECT, "F.Cu", "2");
+        board.add_track(Path{{{1'000'000, 750'000}, {2'000'000, 750'000}},
+                             200'000},
+                        "F.Cu");
+        board.add_via({1'750'000, 1'000'000}, 300'000, 600'000,
+                      "F.Cu", "B.Cu");
+    }
+
+    constexpr float kBasePixelsPerNm = 0.0001f;  // 1 px = 10 μm at view_zoom=1
+    float           view_zoom = 1.0f;            // 状态栏百分比系数（1.0 = 100%）
+    auto            clamp_view_zoom = [&] {
+        if (view_zoom < 0.1f) view_zoom = 0.1f;
+        if (view_zoom > 10.0f) view_zoom = 10.0f;
+    };
+
+    // Zoom 三连改写 view_zoom；每帧 apply_layout 把 base*view_zoom 灌入 PcbEditor。
+    registry.register_command(
+        {builtin::VIEW_ZOOM_IN, "Zoom In", "Increase view_zoom level",
+         "View", "Ctrl++", [&] { view_zoom *= 1.1f; clamp_view_zoom(); }});
+    registry.register_command(
+        {builtin::VIEW_ZOOM_OUT, "Zoom Out", "Decrease view_zoom level",
+         "View", "Ctrl+-", [&] { view_zoom *= 0.9f; clamp_view_zoom(); }});
+    registry.register_command(
+        {builtin::VIEW_ZOOM_FIT, "Zoom to Fit", "Reset view_zoom to 100%",
+         "View", "", [&] { view_zoom = 1.0f; }});
 
     // 4) 构建 Control 树。
     //    栈声明顺序 = 析构逆序：父先声明（后析构）。子先析构时 ~Node 会把自己从
@@ -340,7 +420,7 @@ int main(int argc, char** argv) {
                   {static_cast<float>(ww), status_h});
 
         // 状态栏反映当前 zoom（DRC 计数暂保持默认 0）。
-        status_bar.set_zoom(zoom);
+        status_bar.set_zoom(view_zoom);
     };
 
     Vector2i initial_size = window.size();
@@ -365,8 +445,8 @@ int main(int argc, char** argv) {
     const int glfw_esc = InputMap::glfw_from_key(Key::ESCAPE);
 
     window.set_on_scroll([&](const InputEvent& e) {
-        zoom *= (e.scroll_delta > 0) ? 1.1f : 0.9f;
-        clamp_zoom();
+        view_zoom *= (e.scroll_delta > 0) ? 1.1f : 0.9f;
+        clamp_view_zoom();
         input.push(e);
     });
     window.set_on_key([&](const InputEvent& e) {
@@ -440,7 +520,8 @@ int main(int argc, char** argv) {
         const float inner_y   = top_h;
         const float inner_h   = std::max(0.0f, static_cast<float>(hh) - top_h - status_h);
         const Rect2 center_rect{{inner_x, inner_y}, {inner_w, inner_h}};
-        draw_pcb_demo(canvas, center_rect, zoom);
+        draw_pcb_canvas_bg(canvas, center_rect);
+        draw_board_entities(canvas, editor, board);
 
         // —— 命令面板占位弹层（open 时覆盖）——
         draw_palette_overlay(canvas, palette,
@@ -457,7 +538,7 @@ int main(int argc, char** argv) {
     inspector_panel.set_content(nullptr);
 
     gl.shutdown();
-    std::printf("EDA editor shell exited cleanly after %d frame(s); zoom=%.2f\n",
-                frame, zoom);
+    std::printf("EDA editor shell exited cleanly after %d frame(s); view_zoom=%.2f\n",
+                frame, view_zoom);
     return 0;
 }
