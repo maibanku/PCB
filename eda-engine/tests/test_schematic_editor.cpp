@@ -82,6 +82,19 @@ struct EditorFixture {
     }
 };
 
+// 预置一个器件到 Schematic（直接 API，不经 UndoStack 入栈），返回其引用。
+// 用于"移动 / 旋转 / 删除"类测试的初始状态搭建，与 PcbEditor 测试里
+// f.board.add_pad / add_track / add_via 的直接预置模式保持一致——这样后续断言
+// f.stack.size() 只反映被测的那一次编辑动作，不被放置命令污染。
+Component& place_component(Schematic& sch, Ref<Symbol> sym, Point pos,
+                           std::string refdes = "R1") {
+    Component c;  // 构造即自动生成 UUID
+    c.set_refdes(std::move(refdes));
+    c.set_position(pos);
+    c.set_symbol(sym);
+    return sch.add_component(std::move(c));
+}
+
 }  // namespace
 
 // ============================================================
@@ -402,9 +415,7 @@ TEST(SchEditorSelectTest, ClearSelectionEmitsSignal) {
 
 TEST(SchEditorMoveTest, DragComponentUpdatesPositionAndPushesCommand) {
     EditorFixture f;
-    f.editor.set_tool(Tool::COMPONENT);
-    f.editor.handle_mouse_down(Point{5 * kMm, 5 * kMm});
-    const std::string uuid = f.sch.component(0).uuid();
+    const std::string uuid = place_component(f.sch, f.sym, Point{5 * kMm, 5 * kMm}).uuid();
 
     f.editor.set_tool(Tool::SELECT);
     // 在器件位置按下
@@ -434,8 +445,7 @@ TEST(SchEditorMoveTest, DragComponentUpdatesPositionAndPushesCommand) {
 
 TEST(SchEditorMoveTest, NoMoveOnMouseUpLeavesStackEmpty) {
     EditorFixture f;
-    f.editor.set_tool(Tool::COMPONENT);
-    f.editor.handle_mouse_down(Point{5 * kMm, 5 * kMm});
+    place_component(f.sch, f.sym, Point{5 * kMm, 5 * kMm});
     f.editor.set_tool(Tool::SELECT);
 
     // 按下后不移动直接抬起
@@ -450,9 +460,7 @@ TEST(SchEditorMoveTest, NoMoveOnMouseUpLeavesStackEmpty) {
 
 TEST(SchEditorRotateTest, RotateKeyStepsNinetyDegrees) {
     EditorFixture f;
-    f.editor.set_tool(Tool::COMPONENT);
-    f.editor.handle_mouse_down(Point{1 * kMm, 1 * kMm});
-    const std::string uuid = f.sch.component(0).uuid();
+    const std::string uuid = place_component(f.sch, f.sym, Point{1 * kMm, 1 * kMm}).uuid();
     EXPECT_EQ(f.sch.find_component_by_uuid(uuid)->rotation_degrees(), 0);
 
     f.editor.set_tool(Tool::SELECT);
@@ -486,8 +494,7 @@ TEST(SchEditorRotateTest, RotateWithNoSelectionIsNoop) {
 
 TEST(SchEditorRotateTest, RotateReleaseKeyIgnored) {
     EditorFixture f;
-    f.editor.set_tool(Tool::COMPONENT);
-    f.editor.handle_mouse_down(Point{1 * kMm, 1 * kMm});
+    place_component(f.sch, f.sym, Point{1 * kMm, 1 * kMm});
     f.editor.set_tool(Tool::SELECT);
     f.editor.handle_mouse_down(Point{1 * kMm, 1 * kMm});
 
@@ -501,9 +508,7 @@ TEST(SchEditorRotateTest, RotateReleaseKeyIgnored) {
 
 TEST(SchEditorDeleteTest, DeleteKeyRemovesSelectedAndCommandify) {
     EditorFixture f;
-    f.editor.set_tool(Tool::COMPONENT);
-    f.editor.handle_mouse_down(Point{5 * kMm, 5 * kMm});
-    const std::string uuid = f.sch.component(0).uuid();
+    const std::string uuid = place_component(f.sch, f.sym, Point{5 * kMm, 5 * kMm}).uuid();
     f.editor.set_tool(Tool::SELECT);
     f.editor.handle_mouse_down(Point{5 * kMm, 5 * kMm});
     ASSERT_TRUE(f.editor.is_selected(uuid));
@@ -522,9 +527,7 @@ TEST(SchEditorDeleteTest, DeleteKeyRemovesSelectedAndCommandify) {
 
 TEST(SchEditorDeleteTest, DeleteToolClickRemovesComponent) {
     EditorFixture f;
-    f.editor.set_tool(Tool::COMPONENT);
-    f.editor.handle_mouse_down(Point{5 * kMm, 5 * kMm});
-    const std::string uuid = f.sch.component(0).uuid();
+    const std::string uuid = place_component(f.sch, f.sym, Point{5 * kMm, 5 * kMm}).uuid();
     ASSERT_EQ(f.sch.component_count(), 1u);
 
     f.editor.set_tool(Tool::DELETE);
