@@ -115,3 +115,27 @@ gtest_discover_tests(test_i18n)
 add_executable(test_archive test_archive.cpp)
 target_link_libraries(test_archive PRIVATE eda_project gtest_main)
 gtest_discover_tests(test_archive)
+
+add_executable(test_geometry_boolean test_geometry_boolean.cpp)
+target_link_libraries(test_geometry_boolean PRIVATE eda_geometry gtest_main)
+gtest_discover_tests(test_geometry_boolean)
+
+add_executable(test_geometry_offset test_geometry_offset.cpp)
+target_link_libraries(test_geometry_offset PRIVATE eda_geometry gtest_main)
+gtest_discover_tests(test_geometry_offset)
+
+add_executable(test_geometry_triangulate test_geometry_triangulate.cpp)
+target_link_libraries(test_geometry_triangulate PRIVATE eda_geometry gtest_main)
+gtest_discover_tests(test_geometry_triangulate)
+
+add_executable(test_attachment test_attachment.cpp)
+target_link_libraries(test_attachment PRIVATE eda_project gtest_main)
+gtest_discover_tests(test_attachment)
+
+
+
+
+add_executable(test_validation test_validation.cpp)
+target_link_libraries(test_validation PRIVATE eda_validation gtest_main)
+gtest_discover_tests(test_validation)
+
