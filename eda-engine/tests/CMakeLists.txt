@@ -155,3 +155,11 @@ gtest_discover_tests(test_pcb)
 add_executable(test_gerber test_gerber.cpp)
 target_link_libraries(test_gerber PRIVATE eda_manufacturing eda_pcb gtest_main)
 gtest_discover_tests(test_gerber)
+
+# P3 Task 9：集成验收（跨模块交叉验证）+ 性能基准（独立 main，不入 ctest）
+add_executable(test_geometry_integration test_geometry_integration.cpp)
+target_link_libraries(test_geometry_integration PRIVATE eda_geometry eda_command gtest_main)
+gtest_discover_tests(test_geometry_integration)
+
+add_executable(test_geometry_benchmark test_geometry_benchmark.cpp)
+target_link_libraries(test_geometry_benchmark PRIVATE eda_geometry eda_command)
