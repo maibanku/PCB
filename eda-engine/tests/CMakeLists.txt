@@ -153,5 +153,5 @@ target_link_libraries(test_pcb PRIVATE eda_pcb gtest_main)
 gtest_discover_tests(test_pcb)
 
 add_executable(test_gerber test_gerber.cpp)
-target_link_libraries(test_gerber PRIVATE eda_manufacturing gtest_main)
+target_link_libraries(test_gerber PRIVATE eda_manufacturing eda_pcb gtest_main)
 gtest_discover_tests(test_gerber)
