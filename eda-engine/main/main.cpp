@@ -1,26 +1,30 @@
-// main.cpp —— EDA Editor Shell（P1 + P4 组装）。
+// main.cpp —— EDA Editor Shell（完整编辑器外壳：P1 + P4 组装）。
 //
-// 在 P1 窗口/光栅/Canvas2D 之上组装 P4 编辑器外壳：
-//   - GlfwWindow 1280×800 + RasterizerGL initialize
-//   - ThemeManager（默认 DARK）作为统一颜色 token 源
-//   - DockManager 五区域 border layout：
-//       LEFT   = 工程树面板占位
-//       CENTER = PCB 画布（保留 P1 Demo 的网格 / 焊盘 / 走线 / 过孔）
-//       RIGHT  = Inspector（反射属性面板，空 target 占位）
-//       BOTTOM = 状态栏占位
-//       TOP    = 预留 0px（无顶栏）
-//   - InputMap（默认 KiCad 预设）：物理键 → 命令 id 映射中心
-//   - CommandPalette（占位）：Ctrl+Shift+P 唤起，Esc 关闭
-//   - 主循环：poll → clear → sort → draw(chrome + PCB) → swap
+// 在 P1 窗口/光栅/Canvas2D 之上组装 P4 完整编辑器外壳。Control 树由 root 持有：
+//   root（Control，视口尺寸）
+//     └ top_layout（VBox，顶部固定）
+//         ├ TitleBar（32px，应用标题 + 项目名 + 最小化/最大化/关闭）
+//         ├ MenuBar（7 个标准菜单：File/Edit/View/Place/Design/Tools/Help）
+//         └ ToolBar（[New][Open][Save] │ [Undo][Redo] │ [Zoom+][Zoom-][Fit]）
+//     └ docks（DockManager，填充中段）
+//         ├ LEFT   = Project Tree 面板
+//         ├ RIGHT  = Inspector 面板（反射属性编辑器，空 target 占位）
+//         └ CENTER = PCB 画布（保留 P1 Demo：网格 / 焊盘 / 走线 / 过孔）
+//     └ status_bar（StatusBar，24px 底栏：状态文本 + DRC 计数 + Zoom 百分比）
+//
+// 渲染管线：
+//   1) canvas.clear()
+//   2) queue_subtree_redraw(root) —— 标脏全部 CanvasItem（每帧重绘 GUI chrome）
+//   3) render_subtree(root, canvas) —— DFS 前序遍历 Control 树：
+//        Control._draw → ProductionControlCanvas::{draw_rect, draw_text}
+//        → Canvas2D::{draw_rect_filled, draw_line} → 顶点缓冲
+//   4) draw_pcb_demo(canvas, center_rect, zoom) —— PCB Demo 直接走 Canvas2D
+//   5) draw_palette_overlay(...) —— 命令面板占位弹层
+//   6) canvas.flush() → RenderingServer → RasterizerGL → GPU
 //
 // 用法：
 //   eda_main          — 持续运行到关窗
 //   eda_main <N>      — 跑 N 帧后退出（烟雾测试用）
-//
-// 渲染说明：DockManager 提供布局几何（五区域 + 面板矩形），主题提供颜色 token，
-// 实际像素绘制经 P1 的 Canvas2D 立即模式 API 下发。P4 控件自带 _draw 经
-// ControlCanvas 分发，但本壳层为简化集成直接用 Canvas2D + 主题查表绘制 chrome；
-// PCB 内容保留 P1 算法（网格 / 焊盘 / 走线 / 过孔），裁剪到 CENTER 区域内。
 
 #include <algorithm>
 #include <cstdio>
@@ -40,12 +44,18 @@
 #include "editor/dock/dock_panel.h"
 #include "editor/inspector/inspector.h"
 #include "editor/shortcuts/input_map.h"
-#include "editor/shortcuts/shortcut_def.h"
 #include "platform/glfw/glfw_window.h"
 #include "scene/2d/canvas_2d.h"
-#include "scene/gui/container.h"
-#include "scene/gui/control.h"
+#include "scene/gui/canvas_item.h"             // CanvasItem（subtree queue_redraw）
+#include "scene/gui/container.h"               // VBox / Container / SizeFlag
+#include "scene/gui/control.h"                 // Control / Side
+#include "scene/gui/control_render.h"          // render_subtree
 #include "scene/gui/theme.h"
+#include "scene/gui/widgets/menu_bar.h"
+#include "scene/gui/widgets/status_bar.h"
+#include "scene/gui/widgets/title_bar.h"
+#include "scene/gui/widgets/tool_bar.h"
+#include "scene/main/node.h"
 #include "servers/rendering_server.h"
 
 using namespace eda;
@@ -62,20 +72,6 @@ constexpr int GLFW_KEY_LEFT_ALT_      = 342;
 constexpr int GLFW_KEY_RIGHT_ALT_     = 346;
 constexpr int GLFW_KEY_LEFT_SUPER_    = 343;
 constexpr int GLFW_KEY_RIGHT_SUPER_   = 347;
-
-// 沿父链累加 get_position()，得到控件相对 DockManager 根的绝对像素位置。
-// Dock 树全部由 Control 派生节点构成（VBox/HBox/Container/DockPanel/DockManager），
-// static_cast<Node* const> -> const Control* 在本组装中安全。
-Vector2 absolute_position(const Control* c) {
-    Vector2 acc{0.0f, 0.0f};
-    const Node* n = c;
-    while (n != nullptr) {
-        const auto* ci = static_cast<const Control*>(n);
-        acc = acc + ci->get_position();
-        n = n->get_parent();
-    }
-    return acc;
-}
 
 // 主题颜色查表；缺失键回退到 fallback（不污染业务调色板）。
 Color theme_color_or(const char* key, Color fallback) {
@@ -96,40 +92,32 @@ void draw_rect_outline(Canvas2D& canvas, Rect2 r, Color color) {
     canvas.draw_line({p.x + s.x, p.y}, {p.x + s.x, p.y + s.y});  // right
 }
 
-// 绘制 DockPanel chrome：内容区填充 + 标题栏 + 边框。颜色全走主题 token。
-void draw_panel_chrome(Canvas2D& canvas, const DockPanel& panel) {
-    const Vector2 pos = absolute_position(&panel);
-    const Vector2 size = panel.get_size();
-    if (size.x <= 0.0f || size.y <= 0.0f) return;
-
-    const Color content_bg = theme_color_or(
-        "secondary_background", Color{0.18f, 0.20f, 0.24f, 1.0f});
-    const Color titlebar_bg = theme_color_or(
-        "secondary_background", Color{0.18f, 0.20f, 0.24f, 1.0f});
-    const Color border_clr = theme_color_or(
-        "border", Color{0.10f, 0.12f, 0.14f, 1.0f});
-
-    const float title_h = panel.get_title_bar_height();
-    const Rect2 content_rect{{pos.x, pos.y + title_h},
-                             {size.x, std::max(0.0f, size.y - title_h)}};
-    const Rect2 title_rect{{pos.x, pos.y}, {size.x, title_h}};
-
-    // 内容区填充（占位；真实内容由 set_content 接入）。
-    canvas.set_color(content_bg);
-    canvas.draw_rect_filled(content_rect);
-    // 标题栏（视觉区分：略亮叠色经 secondary_background 同色——保持主题一致性）。
-    canvas.set_color(titlebar_bg);
-    canvas.draw_rect_filled(title_rect);
-    // 外框。
-    draw_rect_outline(canvas, Rect2{pos, size}, border_clr);
-    // 标题栏分隔线。
-    const Color sep = theme_color_or("border", border_clr);
-    canvas.set_color(sep);
-    canvas.set_line_thickness(1.0f);
-    canvas.draw_line({pos.x, pos.y + title_h}, {pos.x + size.x, pos.y + title_h});
+// 标脏子树全部 CanvasItem：render_subtree 只对 dirty 节点调 _draw；每帧重标可保证
+// GUI chrome（TitleBar/MenuBar/ToolBar/StatusBar/Dock 面板）每帧都重绘到 Canvas2D
+// 顶点缓冲（canvas.clear() 每帧清空，需重新提交）。
+void queue_subtree_redraw(Node* n) {
+    if (n == nullptr) return;
+    n->for_each_in_subtree([](Node* node) {
+        if (auto* ci = dynamic_cast<CanvasItem*>(node)) {
+            ci->queue_redraw();
+        }
+    });
 }
 
-// 绘制 PCB Demo（P1 保留）：网格 + 焊盘 + 走线 + 过孔，裁剪到 CENTER 区域。
+// 锚点全置 0 + set_position + set_size：把控件锁定到绝对像素矩形（与
+// Container::fit_child_in_rect 同语义），使其几何脱离父尺寸拉伸、由外部直接定位。
+// 用于 root 的直接子节点（top_layout/docks/status_bar）：root 是普通 Control，
+// 不做容器布局，需手动设几何。
+void lock_rect(Control& c, Vector2 pos, Vector2 size) {
+    c.set_anchor(Side::LEFT, 0.0f);
+    c.set_anchor(Side::TOP, 0.0f);
+    c.set_anchor(Side::RIGHT, 0.0f);
+    c.set_anchor(Side::BOTTOM, 0.0f);
+    c.set_position(pos);
+    c.set_size(size);
+}
+
+// 绘制 PCB Demo（P1 保留）：网格 + 焊盘 + 走线 + 过孔，绝对坐标位于 center_rect 内。
 // 坐标以 center_rect.pos 为原点偏移；网格按 20px 步进铺满 CENTER。
 void draw_pcb_demo(Canvas2D& canvas, Rect2 center_rect, float zoom) {
     const Vector2 origin = center_rect.pos;
@@ -234,41 +222,76 @@ int main(int argc, char** argv) {
     Canvas2D canvas(&gl);
     InputState input;
     float zoom = 1.0f;
-    bool exit_requested = false;
+    bool  exit_requested = false;
 
-    // 2) 命令注册表（内置占位：open/save/undo/redo/zoom...）+ 命令面板。
+    auto clamp_zoom = [&] {
+        if (zoom < 0.1f) zoom = 0.1f;
+        if (zoom > 10.0f) zoom = 10.0f;
+    };
+
+    // 2) 命令注册表 + 命令面板。
+    //    register_builtins 注册 11 个占位命令（handler 空）；此处覆盖 zoom 三连的
+    //    handler，使 ToolBar 按钮 / Menu 项 / InputMap 快捷键三路均路由到同一回调。
     CommandRegistry& registry = CommandRegistry::get();
     registry.register_builtins();
+    registry.register_command(
+        {builtin::VIEW_ZOOM_IN, "Zoom In", "Increase zoom level",
+         "View", "Ctrl++", [&] { zoom *= 1.1f; clamp_zoom(); }});
+    registry.register_command(
+        {builtin::VIEW_ZOOM_OUT, "Zoom Out", "Decrease zoom level",
+         "View", "Ctrl+-", [&] { zoom *= 0.9f; clamp_zoom(); }});
+    registry.register_command(
+        {builtin::VIEW_ZOOM_FIT, "Zoom to Fit", "Reset zoom to 100%",
+         "View", "", [&] { zoom = 1.0f; }});
+
     CommandPalette palette;
 
     // 3) InputMap（默认 KiCad 预设）。
     InputMap input_map(InputMap::Preset::KICAD);
 
-    // 4) DockManager + 面板。
-    //    声明顺序 = 析构逆序：manager 最先析构（级联 delete 五个 area Container），
-    //    面板随后析构（已从 area 自剥离），Inspector 最后构造最先析构
-    //    （从 inspector_panel 自剥离后再让 panel 析构）。栈对象不触发双重释放。
-    DockManager manager;
-    DockPanel   project_panel;
-    DockPanel   inspector_panel;
-    DockPanel   status_panel;
-    Inspector   inspector;
+    // 4) 构建 Control 树。
+    //    栈声明顺序 = 析构逆序：父先声明（后析构）。子先析构时 ~Node 会把自己从
+    //    父的 children_ 抹除，故父析构时不会级联 delete 到栈对象——避免双释放。
+    //    顺序链：root → top_layout → title_bar → menu_bar → tool_bar → docks
+    //            → status_bar → project_panel → inspector_panel → inspector
+    Control      root;
+    VBox         top_layout;
+    TitleBar     title_bar;
+    MenuBar      menu_bar;
+    ToolBar      tool_bar;
+    DockManager  docks;
+    StatusBar    status_bar;
+    DockPanel    project_panel;
+    DockPanel    inspector_panel;
+    Inspector    inspector;
 
+    // —— 顶层 chrome 配置 ——
+    title_bar.set_project_name("demo.pcb");
+    title_bar.close_requested().connect([&] { exit_requested = true; });
+    menu_bar.set_registry(&registry);  // Menu 默认已绑进程单例；显式注入便于替换。
+
+    // —— Dock 面板配置 ——
     project_panel.set_title("Project Tree");
     inspector_panel.set_title("Inspector");
-    status_panel.set_title("Status");
-    inspector_panel.set_content(&inspector);
+    inspector_panel.set_content(&inspector);  // Inspector 作为 RIGHT 面板内容
 
-    // 注册 + 停靠。
-    manager.register_panel("project",   &project_panel);
-    manager.register_panel("inspector", &inspector_panel);
-    manager.register_panel("status",    &status_panel);
-    manager.dock(DockArea::LEFT,   &project_panel);
-    manager.dock(DockArea::RIGHT,  &inspector_panel);
-    manager.dock(DockArea::BOTTOM, &status_panel);
+    // —— 挂树：root → {top_layout, docks, status_bar} ——
+    //    root 是普通 Control（非 Container），用 Node::add_child 挂接；几何由
+    //    apply_layout 每帧手动锁定（lock_rect）。
+    root.add_child(&top_layout);
+    top_layout.add_child(&title_bar);
+    top_layout.add_child(&menu_bar);
+    top_layout.add_child(&tool_bar);
+    root.add_child(&docks);
+    root.add_child(&status_bar);
 
-    // 让面板在各自区域内铺满主轴（VBox→垂直；HBox→水平）。
-    // area 是 panel 的父节点（dock 后 reparent 到 LEFT/RIGHT/BOTTOM 的 VBox/HBox）。
+    // —— Dock 注册 + 停靠 ——
+    docks.register_panel("project",   &project_panel);
+    docks.register_panel("inspector", &inspector_panel);
+    docks.dock(DockArea::LEFT,  &project_panel);
+    docks.dock(DockArea::RIGHT, &inspector_panel);
+
+    // 让面板在各自区域内铺满主轴（LEFT/RIGHT=VBox → 垂直 EXPAND）。
     auto expand_in_area = [](DockPanel* panel, bool vertical_area) {
         Node* parent = panel->get_parent();
         if (parent == nullptr) return;
@@ -279,18 +302,45 @@ int main(int argc, char** argv) {
             area_c->set_h_size_flag(panel, SizeFlag::EXPAND);
         }
     };
-    expand_in_area(&project_panel,   /*vertical_area=*/true);   // LEFT=VBox
-    expand_in_area(&inspector_panel, /*vertical_area=*/true);   // RIGHT=VBox
-    expand_in_area(&status_panel,    /*vertical_area=*/false);  // BOTTOM=HBox
+    expand_in_area(&project_panel,   /*vertical_area=*/true);
+    expand_in_area(&inspector_panel, /*vertical_area=*/true);
 
-    // 初始布局：用窗口尺寸灌入 manager.size + 五区域 border layout 尺寸。
+    // —— 布局函数：每帧根据窗口尺寸锁定三段几何 + 触发容器 sort_children ——
     auto apply_layout = [&](int ww, int hh) {
-        manager.set_size(Vector2{static_cast<float>(ww), static_cast<float>(hh)});
-        manager.set_area_size(DockArea::LEFT,   220.0f);
-        manager.set_area_size(DockArea::TOP,     0.0f);
-        manager.set_area_size(DockArea::RIGHT,  260.0f);
-        manager.set_area_size(DockArea::BOTTOM, 60.0f);
-        manager.sort_children();
+        root.set_viewport_size({static_cast<float>(ww), static_cast<float>(hh)});
+
+        // 顶部 VBox：TitleBar(32) + MenuBar(~22) + ToolBar(~26) = top_h
+        const float title_h   = TitleBar::kFixedHeight;
+        const float menu_h    = menu_bar.get_combined_minimum_size().y;
+        const float toolbar_h = tool_bar.get_combined_minimum_size().y;
+        const float status_h  = StatusBar::kFixedHeight;
+        const float top_h     = title_h + menu_h + toolbar_h;
+        const float dock_h    = std::max(0.0f, static_cast<float>(hh) - top_h - status_h);
+
+        // top_layout：锚顶部，宽 = ww，高 = top_h。sort_children 让 VBox 把三个
+        // 子控件按最小尺寸垂直堆叠（title_h / menu_h / toolbar_h 各取最小高）。
+        lock_rect(top_layout, {0.0f, 0.0f},
+                  {static_cast<float>(ww), top_h});
+        top_layout.sort_children();
+
+        // docks：顶部之下、状态栏之上，铺满中段。DockManager.sort_children 触发
+        // border layout：计算五区域 Rect + fit_child_in_rect 到 area Container，
+        // 级联 area.sort_children() 排布内部面板。
+        lock_rect(docks, {0.0f, top_h},
+                  {static_cast<float>(ww), dock_h});
+        docks.set_area_size(DockArea::LEFT,   220.0f);
+        docks.set_area_size(DockArea::TOP,     0.0f);  // 顶栏由 top_layout 承载
+        docks.set_area_size(DockArea::RIGHT,  260.0f);
+        docks.set_area_size(DockArea::BOTTOM,  0.0f);  // 底栏由 status_bar 承载
+        docks.sort_children();
+
+        // status_bar：锚底部，宽 = ww，高 = 24。
+        lock_rect(status_bar,
+                  {0.0f, static_cast<float>(hh) - status_h},
+                  {static_cast<float>(ww), status_h});
+
+        // 状态栏反映当前 zoom（DRC 计数暂保持默认 0）。
+        status_bar.set_zoom(zoom);
     };
 
     Vector2i initial_size = window.size();
@@ -316,8 +366,7 @@ int main(int argc, char** argv) {
 
     window.set_on_scroll([&](const InputEvent& e) {
         zoom *= (e.scroll_delta > 0) ? 1.1f : 0.9f;
-        if (zoom < 0.1f) zoom = 0.1f;
-        if (zoom > 10.0f) zoom = 10.0f;
+        clamp_zoom();
         input.push(e);
     });
     window.set_on_key([&](const InputEvent& e) {
@@ -335,19 +384,22 @@ int main(int argc, char** argv) {
             }
             return;
         }
-        // 经 InputMap 派发 → 命令 id。
+        // 经 InputMap 派发 → 命令 id → registry handler。
         const auto cmd = input_map.lookup(e);
         if (cmd) {
             if (*cmd == "command_palette.open") {
                 if (palette.is_open()) palette.close(); else palette.open();
+                return;
             }
-            // 其余命令（file.open / edit.undo / view.zoom_in ...）handler 暂为占位。
+            if (const Command* c = registry.get(*cmd)) {
+                if (c->handler) c->handler();
+            }
         }
     });
     window.set_on_mouse_button([&](const InputEvent& e) { input.push(e); });
     window.set_on_mouse_move([&](const InputEvent& e) { input.push(e); });
 
-    // 6) 主循环。
+    // 6) 主循环：poll → clear → layout → render_subtree(GUI) → draw PCB → swap。
     int frame = 0;
     while (!window.should_close() && !exit_requested) {
         window.poll_events();
@@ -367,20 +419,26 @@ int main(int argc, char** argv) {
 
         canvas.clear();
 
-        // —— chrome：LEFT / RIGHT / BOTTOM 面板 ——
-        draw_panel_chrome(canvas, project_panel);
-        draw_panel_chrome(canvas, inspector_panel);
-        draw_panel_chrome(canvas, status_panel);
+        // —— GUI Control 树（TitleBar / MenuBar / ToolBar / Dock 面板 / StatusBar）
+        //    经 render_subtree 栅格化到 Canvas2D 顶点缓冲。每帧标脏保证 chrome
+        //    在 canvas.clear() 后重新提交。渲染入口：control_render.h。 ——
+        queue_subtree_redraw(&root);
+        render_subtree(&root, canvas);
 
-        // —— CENTER：PCB Demo（P1 保留）——
-        const float left_w   = manager.get_area_size(DockArea::LEFT);
-        const float right_w  = manager.get_area_size(DockArea::RIGHT);
-        const float top_h    = manager.get_area_size(DockArea::TOP);
-        const float bottom_h = manager.get_area_size(DockArea::BOTTOM);
-        const float inner_x = left_w;
-        const float inner_w = std::max(0.0f, static_cast<float>(ww) - left_w - right_w);
-        const float inner_y = top_h;
-        const float inner_h = std::max(0.0f, static_cast<float>(hh) - top_h - bottom_h);
+        // —— CENTER：PCB Demo（P1 保留，直接走 Canvas2D）——
+        //    center_rect 由 DockManager border layout 几何推导：
+        //    内列横向 = [left_w, ww - right_w]，纵向 = [top_h, hh - status_h]。
+        const float left_w   = docks.get_area_size(DockArea::LEFT);
+        const float right_w  = docks.get_area_size(DockArea::RIGHT);
+        const float title_h   = TitleBar::kFixedHeight;
+        const float menu_h    = menu_bar.get_combined_minimum_size().y;
+        const float toolbar_h = tool_bar.get_combined_minimum_size().y;
+        const float status_h  = StatusBar::kFixedHeight;
+        const float top_h     = title_h + menu_h + toolbar_h;
+        const float inner_x   = left_w;
+        const float inner_w   = std::max(0.0f, static_cast<float>(ww) - left_w - right_w);
+        const float inner_y   = top_h;
+        const float inner_h   = std::max(0.0f, static_cast<float>(hh) - top_h - status_h);
         const Rect2 center_rect{{inner_x, inner_y}, {inner_w, inner_h}};
         draw_pcb_demo(canvas, center_rect, zoom);
 
